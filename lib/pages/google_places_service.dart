@@ -4,8 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GooglePlacesService {
-  // API key loaded from .env file
-  final String _apiKey = dotenv.env['GOOGLE_PLACES_API_KEY'] ?? '';
+  // API key loaded from .env file (using getter to ensure dotenv is loaded)
+  String get _apiKey => dotenv.env['GOOGLE_PLACES_API_KEY'] ?? '';
 
   // ⭐️ FIXED: Added underscore '_' to match the call below
   String _categorizeRestaurant(String restaurantName) {
@@ -191,6 +191,8 @@ class GooglePlacesService {
     String queryText,
     double radius,
   ) async {
+    if (_apiKey.isEmpty) return [];
+
     const String url = 'https://places.googleapis.com/v1/places:searchText';
 
     final Map<String, dynamic> requestBody = {
@@ -262,7 +264,6 @@ class GooglePlacesService {
       }
       return [];
     } catch (e) {
-      print("Google API Error: $e");
       return [];
     }
   }

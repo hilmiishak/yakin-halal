@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1066697489477",
+    "project_id": "yakinhalal-863b3",
+    "storage_bucket": "yakinhalal-863b3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1066697489477:android:c724b4688559338b5ff72c",
+        "android_client_info": {
+          "package_name": "com.example.projekfyp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBftAPp0lJi6EHsvO3cwIeCyfscxbh-maQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

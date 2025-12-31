@@ -8,6 +8,58 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+// 🎨 Custom Animated Circular Progress Painter
+class _CircularProgressPainter extends CustomPainter {
+  final double progress;
+  final Color progressColor;
+  final Color backgroundColor;
+  final double strokeWidth;
+
+  _CircularProgressPainter({
+    required this.progress,
+    required this.progressColor,
+    required this.backgroundColor,
+    this.strokeWidth = 12,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width - strokeWidth) / 2;
+
+    // Background circle
+    final bgPaint =
+        Paint()
+          ..color = backgroundColor
+          ..strokeWidth = strokeWidth
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round;
+
+    canvas.drawCircle(center, radius, bgPaint);
+
+    // Progress arc
+    final progressPaint =
+        Paint()
+          ..color = progressColor
+          ..strokeWidth = strokeWidth
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round;
+
+    final sweepAngle = 2 * pi * progress;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -pi / 2, // Start from top
+      sweepAngle,
+      false,
+      progressPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _CircularProgressPainter oldDelegate) =>
+      oldDelegate.progress != progress;
+}
+
 // ---------------- Data Models ----------------
 class CalorieEntry {
   final String id;
@@ -284,6 +336,95 @@ class _DashboardView extends StatelessWidget {
     required this.onDeleteEntry,
   });
 
+  // 🍔 Smart food icon based on food name
+  Map<String, dynamic> _getFoodIconData(String foodName) {
+    final name = foodName.toLowerCase();
+
+    // Drinks
+    if (name.contains('coffee') || name.contains('kopi')) {
+      return {'icon': Icons.coffee, 'color': Colors.brown};
+    }
+    if (name.contains('tea') || name.contains('teh')) {
+      return {'icon': Icons.emoji_food_beverage, 'color': Colors.green};
+    }
+    if (name.contains('juice') ||
+        name.contains('jus') ||
+        name.contains('drink')) {
+      return {'icon': Icons.local_drink, 'color': Colors.orange};
+    }
+    if (name.contains('water') || name.contains('air')) {
+      return {'icon': Icons.water_drop, 'color': Colors.blue};
+    }
+
+    // Rice/Main meals
+    if (name.contains('rice') || name.contains('nasi')) {
+      return {'icon': Icons.rice_bowl, 'color': Colors.amber};
+    }
+    if (name.contains('chicken') || name.contains('ayam')) {
+      return {'icon': Icons.set_meal, 'color': Colors.deepOrange};
+    }
+    if (name.contains('fish') || name.contains('ikan')) {
+      return {'icon': Icons.set_meal, 'color': Colors.cyan};
+    }
+
+    // Breakfast
+    if (name.contains('egg') || name.contains('telur')) {
+      return {'icon': Icons.egg, 'color': Colors.amber};
+    }
+    if (name.contains('bread') ||
+        name.contains('roti') ||
+        name.contains('toast')) {
+      return {'icon': Icons.bakery_dining, 'color': Colors.brown};
+    }
+
+    // Snacks & Desserts
+    if (name.contains('cake') ||
+        name.contains('kek') ||
+        name.contains('dessert')) {
+      return {'icon': Icons.cake, 'color': Colors.pink};
+    }
+    if (name.contains('ice') || name.contains('ais krim')) {
+      return {'icon': Icons.icecream, 'color': Colors.pink};
+    }
+    if (name.contains('cookie') || name.contains('biscuit')) {
+      return {'icon': Icons.cookie, 'color': Colors.brown};
+    }
+
+    // Fast food
+    if (name.contains('burger')) {
+      return {'icon': Icons.lunch_dining, 'color': Colors.amber};
+    }
+    if (name.contains('pizza')) {
+      return {'icon': Icons.local_pizza, 'color': Colors.red};
+    }
+    if (name.contains('fries') || name.contains('kentang')) {
+      return {'icon': Icons.fastfood, 'color': Colors.amber};
+    }
+
+    // Noodles
+    if (name.contains('noodle') ||
+        name.contains('mee') ||
+        name.contains('mie')) {
+      return {'icon': Icons.ramen_dining, 'color': Colors.deepOrange};
+    }
+
+    // Fruits & Vegetables
+    if (name.contains('salad') ||
+        name.contains('vegetable') ||
+        name.contains('sayur')) {
+      return {'icon': Icons.eco, 'color': Colors.green};
+    }
+    if (name.contains('fruit') ||
+        name.contains('buah') ||
+        name.contains('apple') ||
+        name.contains('banana')) {
+      return {'icon': Icons.apple, 'color': Colors.red};
+    }
+
+    // Default
+    return {'icon': Icons.restaurant, 'color': Colors.teal};
+  }
+
   void _showEditDialog(BuildContext context, CalorieEntry entry) {
     final nameCtrl = TextEditingController(text: entry.foodName);
     final calCtrl = TextEditingController(text: entry.calories.toString());
@@ -364,32 +505,97 @@ class _DashboardView extends StatelessWidget {
                   ],
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Text(
                       "Calories Consumed Today",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      "$totalCalories / $dailyLimit kcal",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
                     ),
                     const SizedBox(height: 20),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: 12,
-                        backgroundColor: Colors.white.withOpacity(0.3),
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          isOverLimit ? Colors.red.shade700 : Colors.white,
+
+                    // 🎨 Circular Progress with Animation - Centered
+                    Center(
+                      child: SizedBox(
+                        width: 150,
+                        height: 150,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            TweenAnimationBuilder<double>(
+                              tween: Tween(
+                                begin: 0,
+                                end: progress.clamp(0.0, 1.0),
+                              ),
+                              duration: const Duration(milliseconds: 800),
+                              curve: Curves.easeOutCubic,
+                              builder: (context, value, child) {
+                                return CustomPaint(
+                                  size: const Size(150, 150),
+                                  painter: _CircularProgressPainter(
+                                    progress: value,
+                                    progressColor:
+                                        isOverLimit
+                                            ? Colors.red.shade300
+                                            : Colors.white,
+                                    backgroundColor: Colors.white.withOpacity(
+                                      0.2,
+                                    ),
+                                    strokeWidth: 12,
+                                  ),
+                                );
+                              },
+                            ),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "$totalCalories",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 36,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  "of $dailyLimit kcal",
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.8),
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ),
+
+                    const SizedBox(height: 20),
+
+                    // Remaining calories indicator
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        isOverLimit
+                            ? "🔥 ${totalCalories - dailyLimit} kcal over limit!"
+                            : "✨ ${dailyLimit - totalCalories} kcal remaining",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+
                     if (isOverLimit)
                       Padding(
                         padding: const EdgeInsets.only(top: 12),
@@ -399,13 +605,15 @@ class _DashboardView extends StatelessWidget {
                             Icon(
                               Icons.warning_amber_rounded,
                               color: Colors.white,
+                              size: 18,
                             ),
-                            SizedBox(width: 8),
+                            SizedBox(width: 6),
                             Text(
-                              "You've exceeded your limit!",
+                              "Try some exercise today!",
                               style: TextStyle(
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 12,
                               ),
                             ),
                           ],
@@ -512,67 +720,112 @@ class _DashboardView extends StatelessWidget {
                   onDismissed: (direction) => onDeleteEntry(item.id),
                   child: GestureDetector(
                     onTap: () => _showEditDialog(context, item),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.shade100,
-                            blurRadius: 5,
-                            offset: const Offset(0, 2),
+                    child: Builder(
+                      builder: (context) {
+                        final iconData = _getFoodIconData(item.foodName);
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
                           ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.teal.shade50,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.fastfood_rounded,
-                              color: Colors.teal.shade700,
-                            ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.shade100,
+                                blurRadius: 5,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.foodName,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16,
-                                  ),
+                          child: Row(
+                            children: [
+                              // Smart food icon
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: (iconData['color'] as Color)
+                                      .withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
-                                Text(
-                                  DateFormat('h:mm a').format(item.date),
-                                  style: TextStyle(
-                                    color: Colors.grey.shade500,
-                                    fontSize: 12,
-                                  ),
+                                child: Icon(
+                                  iconData['icon'] as IconData,
+                                  color: iconData['color'] as Color,
+                                  size: 24,
                                 ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.foodName,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.access_time,
+                                          size: 12,
+                                          color: Colors.grey.shade400,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          DateFormat(
+                                            'h:mm a',
+                                          ).format(item.date),
+                                          style: TextStyle(
+                                            color: Colors.grey.shade500,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Calorie badge
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.shade50,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.local_fire_department,
+                                      size: 14,
+                                      color: Colors.orange.shade600,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      "${item.calories}",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        color: Colors.orange.shade700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            "${item.calories} kcal",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.orange,
-                            ),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
                   ),
                 );
@@ -589,11 +842,31 @@ class _DashboardView extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 40),
         child: Column(
           children: [
-            Icon(Icons.no_food_outlined, size: 48, color: Colors.grey.shade300),
-            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.teal.shade50,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.restaurant_menu,
+                size: 48,
+                color: Colors.teal.shade300,
+              ),
+            ),
+            const SizedBox(height: 16),
             Text(
-              "No food tracked yet today.",
-              style: TextStyle(color: Colors.grey.shade500),
+              "No meals tracked yet",
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Tap the button above to scan your first meal!",
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
             ),
           ],
         ),
@@ -1231,41 +1504,160 @@ class _HistoryAnalysisViewState extends State<_HistoryAnalysisView> {
 
   Widget _buildWeeklyChart(Map<String, int> data) {
     final maxVal = data.values.isEmpty ? 1 : data.values.reduce(max);
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
     return Container(
-      height: 150,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade100,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children:
-            data.entries.map((e) {
-              final h = maxVal == 0 ? 0.0 : (e.value / maxVal * 100).toDouble();
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Container(
-                    width: 20,
-                    height: h,
-                    decoration: BoxDecoration(
-                      color:
-                          e.value > widget.dailyLimit
-                              ? Colors.red
-                              : Colors.green,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "This Week",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.teal.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  "Limit: ${widget.dailyLimit} kcal",
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.teal.shade700,
+                    fontWeight: FontWeight.w600,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    DateFormat('E').format(DateTime.parse(e.key)),
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                ],
-              );
-            }).toList(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 140,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children:
+                  data.entries.map((e) {
+                    final isToday = e.key == today;
+                    final percentage = maxVal == 0 ? 0.0 : (e.value / maxVal);
+                    final barHeight = max(8.0, percentage * 100);
+                    final isOver = e.value > widget.dailyLimit;
+
+                    return TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0, end: barHeight),
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, height, child) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            // Value label
+                            if (e.value > 0)
+                              Text(
+                                "${e.value}",
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color:
+                                      isOver
+                                          ? Colors.red
+                                          : Colors.grey.shade600,
+                                ),
+                              ),
+                            const SizedBox(height: 4),
+                            // Bar
+                            Container(
+                              width: isToday ? 32 : 24,
+                              height: height,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors:
+                                      isOver
+                                          ? [
+                                            Colors.red.shade400,
+                                            Colors.red.shade200,
+                                          ]
+                                          : [
+                                            Colors.teal.shade400,
+                                            Colors.teal.shade200,
+                                          ],
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow:
+                                    isToday
+                                        ? [
+                                          BoxShadow(
+                                            color: (isOver
+                                                    ? Colors.red
+                                                    : Colors.teal)
+                                                .withOpacity(0.3),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ]
+                                        : null,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            // Day label
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: isToday ? 8 : 4,
+                                vertical: isToday ? 4 : 2,
+                              ),
+                              decoration:
+                                  isToday
+                                      ? BoxDecoration(
+                                        color: Colors.teal,
+                                        borderRadius: BorderRadius.circular(8),
+                                      )
+                                      : null,
+                              child: Text(
+                                DateFormat(
+                                  'E',
+                                ).format(DateTime.parse(e.key)).substring(0, 2),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight:
+                                      isToday
+                                          ? FontWeight.bold
+                                          : FontWeight.w500,
+                                  color:
+                                      isToday
+                                          ? Colors.white
+                                          : Colors.grey.shade600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }).toList(),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1308,33 +1700,208 @@ class _HistoryAnalysisViewState extends State<_HistoryAnalysisView> {
   Widget _buildInsightsView(Map<String, int> dailyTotals, int goodDays) {
     final total = dailyTotals.length;
     final pct = total == 0 ? 0 : (goodDays / total * 100).toInt();
-    return Center(
+    final avgCalories =
+        dailyTotals.isEmpty
+            ? 0
+            : (dailyTotals.values.reduce((a, b) => a + b) / dailyTotals.length)
+                .round();
+    final totalCalories =
+        dailyTotals.isEmpty ? 0 : dailyTotals.values.reduce((a, b) => a + b);
+    final bestDay =
+        dailyTotals.isEmpty
+            ? null
+            : dailyTotals.entries.reduce(
+              (a, b) =>
+                  (a.value <= widget.dailyLimit &&
+                          (b.value > widget.dailyLimit || a.value > b.value))
+                      ? a
+                      : b,
+            );
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade100,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         children: [
-          Stack(
-            alignment: Alignment.center,
+          // Success Rate Circle
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: pct / 100),
+            duration: const Duration(milliseconds: 1000),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, child) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 120,
+                    height: 120,
+                    child: CustomPaint(
+                      painter: _CircularProgressPainter(
+                        progress: value,
+                        progressColor:
+                            pct >= 70
+                                ? Colors.green
+                                : pct >= 40
+                                ? Colors.orange
+                                : Colors.red,
+                        backgroundColor: Colors.grey.shade200,
+                        strokeWidth: 12,
+                      ),
+                    ),
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "$pct%",
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        "Success",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+
+          // Stats Grid
+          Row(
             children: [
-              SizedBox(
-                width: 100,
-                height: 100,
-                child: CircularProgressIndicator(
-                  value: pct / 100,
-                  strokeWidth: 10,
-                  color: Colors.green,
-                  backgroundColor: Colors.grey.shade200,
+              Expanded(
+                child: _buildStatCard(
+                  icon: Icons.check_circle,
+                  iconColor: Colors.green,
+                  value: "$goodDays",
+                  label: "Good Days",
                 ),
               ),
-              Text(
-                "$pct%",
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  icon: Icons.cancel,
+                  iconColor: Colors.red,
+                  value: "${total - goodDays}",
+                  label: "Over Limit",
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          const Text("Success Rate"),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  icon: Icons.show_chart,
+                  iconColor: Colors.blue,
+                  value: "$avgCalories",
+                  label: "Avg kcal/day",
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  icon: Icons.local_fire_department,
+                  iconColor: Colors.orange,
+                  value: "$totalCalories",
+                  label: "Total kcal",
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // Motivational Message
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors:
+                    pct >= 70
+                        ? [Colors.green.shade400, Colors.teal.shade400]
+                        : pct >= 40
+                        ? [Colors.orange.shade400, Colors.amber.shade400]
+                        : [Colors.red.shade400, Colors.pink.shade400],
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  pct >= 70
+                      ? "🏆"
+                      : pct >= 40
+                      ? "💪"
+                      : "🎯",
+                  style: const TextStyle(fontSize: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    pct >= 70
+                        ? "Amazing! You're crushing your goals!"
+                        : pct >= 40
+                        ? "Good effort! Keep pushing forward!"
+                        : "Every day is a new chance to improve!",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard({
+    required IconData icon,
+    required Color iconColor,
+    required String value,
+    required String label,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: iconColor, size: 24),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+          ),
         ],
       ),
     );

@@ -9,6 +9,7 @@ import 'preference.dart';
 import 'google_places_service.dart';
 import 'history_helper.dart'; // ⭐️ IMPORT
 import '../utils/distance_utils.dart'; // ⭐️ IMPORT DISTANCE UTILS
+import '../widgets/halal_badge.dart'; // 🏆 HALAL BADGE
 
 class RecommendedPage extends StatefulWidget {
   const RecommendedPage({super.key});
@@ -761,22 +762,13 @@ class _RecommendedRestaurantCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (isGoogle)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        margin: const EdgeInsets.only(bottom: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          "Google Data",
-                          style: TextStyle(fontSize: 9, color: Colors.white),
-                        ),
-                      ),
+                    // 🏆 Halal Badge - Community vs Certified
+                    HalalBadge(
+                      type:
+                          isGoogle ? HalalType.community : HalalType.certified,
+                      compact: true,
+                    ),
+                    const SizedBox(height: 6),
 
                     Text(
                       data['name'] ?? 'No Name',

@@ -512,6 +512,8 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
   }
 
   // Helper Widgets
+
+  // Helper Widgets
   Widget _buildInfoBadge(IconData icon, Color color, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

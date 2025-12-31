@@ -15,6 +15,7 @@ import 'calorie_tracker_page.dart';
 import 'google_places_service.dart';
 import 'history_helper.dart'; // ⭐️ IMPORT THE HELPER
 import '../utils/distance_utils.dart'; // ⭐️ IMPORT DISTANCE UTILS
+import '../widgets/halal_badge.dart'; // 🏆 HALAL BADGE
 
 // ----------------------- MAIN DASHBOARD CONTAINER -----------------------
 
@@ -282,26 +283,91 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 0, vertical: 10),
+        // Header with Clear Button
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(Icons.history, color: Color(0xFF006D69), size: 20),
-              SizedBox(width: 8),
-              Text(
-                "RECENTLY VIEWED",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: "Poppins",
-                  color: Color(0xFF006D69),
-                ),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF006D69).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.history,
+                      color: Color(0xFF006D69),
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    "Recently Viewed",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: "Poppins",
+                      color: Color(0xFF006D69),
+                    ),
+                  ),
+                ],
+              ),
+              // Clear All Button
+              StreamBuilder<QuerySnapshot>(
+                stream:
+                    FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(user.uid)
+                        .collection('view_history')
+                        .limit(1)
+                        .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const SizedBox();
+                  }
+                  return GestureDetector(
+                    onTap: () => _showClearHistoryDialog(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.delete_sweep,
+                            size: 14,
+                            color: Colors.red.shade600,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "Clear",
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.red.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           ),
         ),
         SizedBox(
-          height: 100,
+          height: 110,
           child: StreamBuilder<QuerySnapshot>(
             stream:
                 FirebaseFirestore.instance
@@ -309,7 +375,7 @@ class _HomePageState extends State<HomePage> {
                     .doc(user.uid)
                     .collection('view_history')
                     .orderBy('timestamp', descending: true)
-                    .limit(5)
+                    .limit(10)
                     .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -319,36 +385,40 @@ class _HomePageState extends State<HomePage> {
               }
 
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                return SizedBox(
+                return Container(
                   height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
                   child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(15),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(color: Colors.grey.shade200, blurRadius: 5),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.history,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.explore_outlined,
+                          color: Colors.grey.shade400,
+                          size: 32,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "No restaurants viewed yet",
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "Start exploring halal restaurants!",
+                          style: TextStyle(
                             color: Colors.grey.shade400,
-                            size: 25,
+                            fontSize: 11,
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            "No recent views",
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -361,6 +431,7 @@ class _HomePageState extends State<HomePage> {
                   final doc = snapshot.data!.docs[index];
                   final data = doc.data() as Map<String, dynamic>;
                   final viewCount = data['view_count'] ?? 1;
+                  final isGoogle = data['is_google'] ?? false;
 
                   String timeAgo = "Recently";
                   final timestamp = data['timestamp'] as Timestamp?;
@@ -376,125 +447,167 @@ class _HomePageState extends State<HomePage> {
                       timeAgo = "${diff.inDays}d ago";
                   }
 
-                  return Container(
-                    width: 150,
-                    margin: const EdgeInsets.only(right: 8),
-                    child: GestureDetector(
-                      onTap: () async {
-                        await addToViewHistory(
-                          context,
-                          data['restaurant_id'],
-                          data,
-                        );
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (_) => RestaurantDetailPage(
-                                  restaurantId: data['restaurant_id'],
-                                  data: data,
-                                  initialDistance:
-                                      data['distance'] ?? "Calculating...",
-                                ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.shade200,
-                              blurRadius: 6,
-                              offset: const Offset(1, 2),
+                  return Dismissible(
+                    key: Key(doc.id),
+                    direction: DismissDirection.up,
+                    onDismissed: (_) => removeFromViewHistory(context, doc.id),
+                    background: Container(
+                      margin: const EdgeInsets.only(right: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade100,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.delete, color: Colors.red),
+                      ),
+                    ),
+                    child: Container(
+                      width: 160,
+                      margin: const EdgeInsets.only(right: 10),
+                      child: GestureDetector(
+                        onTap: () async {
+                          await addToViewHistory(
+                            context,
+                            data['restaurant_id'],
+                            data,
+                          );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => RestaurantDetailPage(
+                                    restaurantId: data['restaurant_id'],
+                                    data: data,
+                                    initialDistance:
+                                        data['distance'] ?? "Calculating...",
+                                  ),
                             ),
-                          ],
-                          border: Border.all(color: Colors.grey.shade100),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE3F9F4),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(
-                                  Icons.restaurant,
-                                  color: Color(0xFF006D69),
-                                  size: 20,
-                                ),
+                          );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors:
+                                  isGoogle
+                                      ? [Colors.blue.shade50, Colors.white]
+                                      : [const Color(0xFFE3F9F4), Colors.white],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.shade200,
+                                blurRadius: 6,
+                                offset: const Offset(0, 3),
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                            ],
+                            border: Border.all(
+                              color:
+                                  isGoogle
+                                      ? Colors.blue.shade100
+                                      : const Color(
+                                        0xFF93DCC9,
+                                      ).withOpacity(0.5),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // View count badge (top right)
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
+                                    // Source indicator
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            isGoogle
+                                                ? Colors.blue.shade100
+                                                : Colors.green.shade100,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        isGoogle ? "Community" : "Certified",
+                                        style: TextStyle(
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.bold,
+                                          color:
+                                              isGoogle
+                                                  ? Colors.blue.shade700
+                                                  : Colors.green.shade700,
+                                        ),
+                                      ),
+                                    ),
+                                    if (viewCount > 1)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 5,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.amber.shade100,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          "${viewCount}x",
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.amber.shade800,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                // Restaurant Name (full, multi-line)
+                                Expanded(
+                                  child: Center(
+                                    child: Text(
                                       data['name'] ?? 'Unknown',
                                       style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF006D69),
+                                        height: 1.2,
                                       ),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
                                     ),
-                                    const SizedBox(height: 3),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.access_time,
-                                          size: 11,
-                                          color: Colors.grey.shade500,
-                                        ),
-                                        const SizedBox(width: 3),
-                                        Flexible(
-                                          child: Text(
-                                            timeAgo,
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: Colors.grey.shade600,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        if (viewCount > 1)
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              left: 4,
-                                            ),
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 3,
-                                                    vertical: 1,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFF93DCC9),
-                                                borderRadius:
-                                                    BorderRadius.circular(3),
-                                              ),
-                                              child: Text(
-                                                "$viewCount×",
-                                                style: const TextStyle(
-                                                  color: Colors.black87,
-                                                  fontSize: 9,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                      ],
+                                  ),
+                                ),
+                                // Time ago (bottom)
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.access_time,
+                                      size: 10,
+                                      color: Colors.grey.shade500,
+                                    ),
+                                    const SizedBox(width: 3),
+                                    Text(
+                                      timeAgo,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.grey.shade600,
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -505,19 +618,62 @@ class _HomePageState extends State<HomePage> {
             },
           ),
         ),
-        const SizedBox(height: 8),
+        // Swipe hint
         Padding(
-          padding: const EdgeInsets.only(left: 4),
-          child: Text(
-            "Tap to revisit restaurants you've viewed",
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey.shade600,
-              fontStyle: FontStyle.italic,
-            ),
+          padding: const EdgeInsets.only(top: 6),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.swipe_up, size: 12, color: Colors.grey.shade400),
+              const SizedBox(width: 4),
+              Text(
+                "Swipe up to remove",
+                style: TextStyle(fontSize: 10, color: Colors.grey.shade400),
+              ),
+            ],
           ),
         ),
       ],
+    );
+  }
+
+  // Clear History Confirmation Dialog
+  void _showClearHistoryDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Row(
+              children: [
+                Icon(Icons.delete_forever, color: Colors.red.shade400),
+                const SizedBox(width: 8),
+                const Text("Clear History"),
+              ],
+            ),
+            content: const Text(
+              "Are you sure you want to clear all your recently viewed restaurants?",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  clearAllViewHistory(context);
+                },
+                child: const Text("Clear All"),
+              ),
+            ],
+          ),
     );
   }
 
@@ -586,29 +742,6 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   const SizedBox(height: 25),
-                  Row(
-                    children: [
-                      Container(
-                        width: 4,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF006D69),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        "Your Activity",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          fontFamily: "Poppins",
-                          color: Color(0xFF006D69),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
                   _buildRecentlyViewedList(),
                   const SizedBox(height: 25),
                   Row(
@@ -989,27 +1122,63 @@ class RestaurantCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                data['imageUrl'] ?? '',
-                width: 70,
-                height: 70,
-                fit: BoxFit.cover,
-                errorBuilder:
-                    (_, __, ___) => const Icon(
-                      Icons.restaurant,
-                      size: 35,
-                      color: Color(0xFF006D69),
+            // Image with Certified Badge overlay
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.network(
+                    data['imageUrl'] ?? '',
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.cover,
+                    errorBuilder:
+                        (_, __, ___) => Container(
+                          width: 70,
+                          height: 70,
+                          decoration: BoxDecoration(
+                            color: Colors.teal.shade50,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.restaurant,
+                            size: 35,
+                            color: Color(0xFF006D69),
+                          ),
+                        ),
+                  ),
+                ),
+                // 🏆 Certified Badge on image
+                Positioned(
+                  top: 4,
+                  left: 4,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 4,
+                        ),
+                      ],
                     ),
-              ),
+                    child: const Icon(
+                      Icons.verified,
+                      size: 12,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ⭐️ RESTORED: Name + Star Rating Row
+                  // Name + Star Rating + Certified Badge Row
                   Row(
                     children: [
                       Expanded(
@@ -1024,6 +1193,11 @@ class RestaurantCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      const HalalBadge(
+                        type: HalalType.certified,
+                        compact: true,
+                      ),
+                      const SizedBox(width: 6),
                       const Icon(Icons.star, color: Colors.amber, size: 15),
                       const SizedBox(width: 3),
                       Text(

@@ -6,6 +6,7 @@ import 'google_places_service.dart';
 import 'dart:async';
 import 'history_helper.dart'; // ⭐️ IMPORT
 import '../utils/distance_utils.dart'; // ⭐️ IMPORT DISTANCE UTILS
+import '../widgets/halal_badge.dart'; // 🏆 HALAL BADGE
 
 // 🔹 Unified Helper Class
 class RestaurantWithDistance {
@@ -736,6 +737,14 @@ class RestaurantCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 6),
+
+                  // 🏆 Halal Badge - Certified vs Community
+                  HalalBadge(
+                    type: isGoogle ? HalalType.community : HalalType.certified,
+                    compact: true,
+                  ),
+                  const SizedBox(height: 6),
+
                   _buildInfoRow(
                     icon: Icons.restaurant_menu,
                     label: cuisine,
@@ -746,14 +755,6 @@ class RestaurantCard extends StatelessWidget {
                     icon: Icons.location_on,
                     label: distance,
                     color: Colors.grey[700]!,
-                  ),
-                  _buildInfoRow(
-                    icon: isGoogle ? Icons.public : Icons.verified,
-                    label: halalCert,
-                    color:
-                        halalCert.contains('Certified')
-                            ? Colors.green
-                            : Colors.grey[600]!,
                   ),
                 ],
               ),

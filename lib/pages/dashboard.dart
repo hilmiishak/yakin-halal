@@ -141,11 +141,15 @@ class _HomePageState extends State<HomePage> {
         if (permission == LocationPermission.denied) return;
       }
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
-      if (mounted) setState(() => _currentPosition = position);
+      if (mounted) {
+        setState(() => _currentPosition = position);
+      }
     } catch (e) {
-      print("Error getting location: $e");
+      debugPrint("Error getting location: $e");
     }
   }
 
@@ -271,7 +275,7 @@ class _HomePageState extends State<HomePage> {
       setState(() => _chatResults = allResults.take(5).toList());
     } catch (e) {
       setState(() => _aiReply = "I had trouble connecting. Try again!");
-      print("Chat Error: $e");
+      debugPrint("Chat Error: $e");
     }
   }
 
@@ -294,7 +298,7 @@ class _HomePageState extends State<HomePage> {
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF006D69).withOpacity(0.1),
+                      color: const Color(0xFF006D69).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
@@ -437,20 +441,24 @@ class _HomePageState extends State<HomePage> {
                   final timestamp = data['timestamp'] as Timestamp?;
                   if (timestamp != null) {
                     final diff = DateTime.now().difference(timestamp.toDate());
-                    if (diff.inMinutes < 1)
+                    if (diff.inMinutes < 1) {
                       timeAgo = "Just now";
-                    else if (diff.inMinutes < 60)
+                    } else if (diff.inMinutes < 60) {
                       timeAgo = "${diff.inMinutes}m ago";
-                    else if (diff.inHours < 24)
+                    } else if (diff.inHours < 24) {
                       timeAgo = "${diff.inHours}h ago";
-                    else
+                    } else {
                       timeAgo = "${diff.inDays}d ago";
+                    }
                   }
 
                   return Dismissible(
                     key: Key(doc.id),
                     direction: DismissDirection.up,
-                    onDismissed: (_) => removeFromViewHistory(context, doc.id),
+                    onDismissed: (_) {
+                      final currentContext = context;
+                      removeFromViewHistory(currentContext, doc.id);
+                    },
                     background: Container(
                       margin: const EdgeInsets.only(right: 10),
                       decoration: BoxDecoration(
@@ -471,6 +479,7 @@ class _HomePageState extends State<HomePage> {
                             data['restaurant_id'],
                             data,
                           );
+                          if (!context.mounted) return;
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -508,7 +517,7 @@ class _HomePageState extends State<HomePage> {
                                       ? Colors.blue.shade100
                                       : const Color(
                                         0xFF93DCC9,
-                                      ).withOpacity(0.5),
+                                      ).withValues(alpha: 0.5),
                             ),
                           ),
                           child: Padding(
@@ -809,8 +818,9 @@ class _HomePageState extends State<HomePage> {
     Query query = FirebaseFirestore.instance
         .collection('restaurants')
         .where('status', isEqualTo: 'approved');
-    if (_userPreferences.isNotEmpty)
+    if (_userPreferences.isNotEmpty) {
       query = query.where('cuisine', whereIn: _userPreferences);
+    }
 
     return StreamBuilder<QuerySnapshot>(
       stream: query.limit(3).snapshots(),
@@ -989,7 +999,7 @@ class _HomePageState extends State<HomePage> {
                                 data: data,
                               ),
                             );
-                          }).toList(),
+                          }),
                         ],
                       ],
                     ),
@@ -1005,7 +1015,7 @@ class _HomePageState extends State<HomePage> {
                       color: Colors.white,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, -5),
                         ),
@@ -1100,6 +1110,7 @@ class RestaurantCard extends StatelessWidget {
         // ⭐️ IMPORTANT: Pass context here
         await addToViewHistory(context, restaurantId, data);
 
+        if (!context.mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -1159,7 +1170,7 @@ class RestaurantCard extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 4,
                         ),
                       ],

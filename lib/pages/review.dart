@@ -104,7 +104,7 @@ class _ReviewPageState extends State<ReviewPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -185,7 +185,7 @@ class _ReviewPageState extends State<ReviewPage> {
               decoration: BoxDecoration(
                 color: const Color(0xFFE0F2F1), // Very light teal
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.teal.withOpacity(0.2)),
+                border: Border.all(color: Colors.teal.withValues(alpha: 0.2)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,7 +229,7 @@ class _ReviewPageState extends State<ReviewPage> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -386,10 +386,13 @@ class _ReviewPageState extends State<ReviewPage> {
       });
 
       // Close keyboard
-      if (mounted) FocusScope.of(context).unfocus();
+      if (mounted) {
+        FocusScope.of(context).unfocus();
+      }
 
     } catch (e) {
       setState(() => isSubmitting = false);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }

@@ -140,10 +140,12 @@ class _CalorieTrackerPageState extends State<CalorieTrackerPage> {
             'date': Timestamp.fromDate(date),
             'timestamp': FieldValue.serverTimestamp(),
           });
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Entry Saved!")));
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Error: $e")));
@@ -158,6 +160,7 @@ class _CalorieTrackerPageState extends State<CalorieTrackerPage> {
         .collection('calorie_tracker')
         .doc(id)
         .delete();
+    if (!mounted) return;
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text("Deleted.")));
@@ -171,6 +174,7 @@ class _CalorieTrackerPageState extends State<CalorieTrackerPage> {
         .collection('calorie_tracker')
         .doc(id)
         .update({'foodName': newName, 'calories': newCals});
+    if (!mounted) return;
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text("Updated.")));
@@ -178,8 +182,9 @@ class _CalorieTrackerPageState extends State<CalorieTrackerPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_currentUser == null)
+    if (_currentUser == null) {
       return const Center(child: Text("Please login first"));
+    }
 
     return StreamBuilder<QuerySnapshot>(
       stream:
@@ -210,7 +215,7 @@ class _CalorieTrackerPageState extends State<CalorieTrackerPage> {
                 .toList();
         final int todayTotal = todayEntries.fold(
           0,
-          (sum, item) => sum + item.calories,
+          (total, item) => total + item.calories,
         );
 
         final List<Widget> pages = [
@@ -498,7 +503,7 @@ class _DashboardView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -538,8 +543,8 @@ class _DashboardView extends StatelessWidget {
                                         isOverLimit
                                             ? Colors.red.shade300
                                             : Colors.white,
-                                    backgroundColor: Colors.white.withOpacity(
-                                      0.2,
+                                    backgroundColor: Colors.white.withValues(
+                                      alpha: 0.2,
                                     ),
                                     strokeWidth: 12,
                                   ),
@@ -561,7 +566,7 @@ class _DashboardView extends StatelessWidget {
                                 Text(
                                   "of $dailyLimit kcal",
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withValues(alpha: 0.8),
                                     fontSize: 13,
                                   ),
                                 ),
@@ -581,7 +586,7 @@ class _DashboardView extends StatelessWidget {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: Colors.white.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -746,7 +751,7 @@ class _DashboardView extends StatelessWidget {
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: (iconData['color'] as Color)
-                                      .withOpacity(0.1),
+                                      .withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: Icon(
@@ -887,7 +892,7 @@ class _AddEntryForm extends StatefulWidget {
 class _AddEntryFormState extends State<_AddEntryForm> {
   final _nameController = TextEditingController();
   final _calsController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
+  final DateTime _selectedDate = DateTime.now();
   File? _imageFile;
   bool _isAnalyzing = false;
   final ImagePicker _picker = ImagePicker();
@@ -967,9 +972,9 @@ class _AddEntryFormState extends State<_AddEntryForm> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -1047,23 +1052,27 @@ class _AddEntryFormState extends State<_AddEntryForm> {
           _nameController.text = nameMatch.group(1) ?? "";
           _calsController.text = calMatch.group(1) ?? "";
         });
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("✨ Food analyzed successfully!"),
               backgroundColor: Colors.green,
             ),
           );
+        }
       } else {
         throw "Could not parse AI response.";
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("AI Failed: $e"), backgroundColor: Colors.red),
         );
+      }
     } finally {
-      if (mounted) setState(() => _isAnalyzing = false);
+      if (mounted) {
+        setState(() => _isAnalyzing = false);
+      }
     }
   }
 
@@ -1137,7 +1146,7 @@ class _AddEntryFormState extends State<_AddEntryForm> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.purple.withOpacity(0.3),
+                      color: Colors.purple.withValues(alpha: 0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -1149,7 +1158,7 @@ class _AddEntryFormState extends State<_AddEntryForm> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -1493,7 +1502,7 @@ class _HistoryAnalysisViewState extends State<_HistoryAnalysisView> {
                       ],
                     ),
                   );
-                }).toList(),
+                }),
               ],
             ),
           ),
@@ -1551,7 +1560,7 @@ class _HistoryAnalysisViewState extends State<_HistoryAnalysisView> {
           ),
           const SizedBox(height: 24),
           SizedBox(
-            height: 140,
+            height: 160, // Increased height to accommodate all elements
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -1559,7 +1568,7 @@ class _HistoryAnalysisViewState extends State<_HistoryAnalysisView> {
                   data.entries.map((e) {
                     final isToday = e.key == today;
                     final percentage = maxVal == 0 ? 0.0 : (e.value / maxVal);
-                    final barHeight = max(8.0, percentage * 100);
+                    final barHeight = max(8.0, percentage * 90); // Max bar height 90px
                     final isOver = e.value > widget.dailyLimit;
 
                     return TweenAnimationBuilder<double>(
@@ -1567,23 +1576,26 @@ class _HistoryAnalysisViewState extends State<_HistoryAnalysisView> {
                       duration: const Duration(milliseconds: 600),
                       curve: Curves.easeOutCubic,
                       builder: (context, height, child) {
-                        return Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            // Value label
-                            if (e.value > 0)
-                              Text(
-                                "${e.value}",
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color:
-                                      isOver
-                                          ? Colors.red
-                                          : Colors.grey.shade600,
+                        return SizedBox(
+                          width: isToday ? 40 : 32,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Value label
+                              if (e.value > 0)
+                                Text(
+                                  "${e.value}",
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                        isOver
+                                            ? Colors.red
+                                            : Colors.grey.shade600,
+                                  ),
                                 ),
-                              ),
-                            const SizedBox(height: 4),
+                              const SizedBox(height: 4),
                             // Bar
                             Container(
                               width: isToday ? 32 : 24,
@@ -1611,7 +1623,7 @@ class _HistoryAnalysisViewState extends State<_HistoryAnalysisView> {
                                             color: (isOver
                                                     ? Colors.red
                                                     : Colors.teal)
-                                                .withOpacity(0.3),
+                                                .withValues(alpha: 0.3),
                                             blurRadius: 8,
                                             offset: const Offset(0, 4),
                                           ),
@@ -1651,6 +1663,7 @@ class _HistoryAnalysisViewState extends State<_HistoryAnalysisView> {
                               ),
                             ),
                           ],
+                        ),
                         );
                       },
                     );
@@ -1707,16 +1720,7 @@ class _HistoryAnalysisViewState extends State<_HistoryAnalysisView> {
                 .round();
     final totalCalories =
         dailyTotals.isEmpty ? 0 : dailyTotals.values.reduce((a, b) => a + b);
-    final bestDay =
-        dailyTotals.isEmpty
-            ? null
-            : dailyTotals.entries.reduce(
-              (a, b) =>
-                  (a.value <= widget.dailyLimit &&
-                          (b.value > widget.dailyLimit || a.value > b.value))
-                      ? a
-                      : b,
-            );
+    // bestDay calculation removed - unused
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -1923,20 +1927,51 @@ class _BMICalculatorFormState extends State<_BMICalculatorForm> {
   final _ageCtrl = TextEditingController();
   String _gender = 'Male';
   int? _calculatedTDEE;
+  String? _errorMessage;
 
   void _calculate() {
-    if (_weightCtrl.text.isEmpty ||
-        _heightCtrl.text.isEmpty ||
-        _ageCtrl.text.isEmpty)
+    // Clear previous error
+    setState(() => _errorMessage = null);
+
+    // Validate inputs
+    if (_weightCtrl.text.trim().isEmpty ||
+        _heightCtrl.text.trim().isEmpty ||
+        _ageCtrl.text.trim().isEmpty) {
+      setState(() => _errorMessage = "Please fill in all fields");
       return;
-    double w = double.parse(_weightCtrl.text);
-    double h = double.parse(_heightCtrl.text);
-    int a = int.parse(_ageCtrl.text);
-    double bmr =
-        (_gender == 'Male')
-            ? (10 * w) + (6.25 * h) - (5 * a) + 5
-            : (10 * w) + (6.25 * h) - (5 * a) - 161;
-    setState(() => _calculatedTDEE = (bmr * 1.2).round());
+    }
+
+    // Parse values with error handling
+    try {
+      double w = double.parse(_weightCtrl.text.trim());
+      double h = double.parse(_heightCtrl.text.trim());
+      int a = int.parse(_ageCtrl.text.trim());
+
+      // Validate reasonable ranges
+      if (w <= 0 || w > 500) {
+        setState(() => _errorMessage = "Please enter a valid weight (1-500 kg)");
+        return;
+      }
+      if (h <= 0 || h > 300) {
+        setState(() => _errorMessage = "Please enter a valid height (1-300 cm)");
+        return;
+      }
+      if (a <= 0 || a > 150) {
+        setState(() => _errorMessage = "Please enter a valid age (1-150)");
+        return;
+      }
+
+      // Calculate BMR using Mifflin-St Jeor Equation
+      double bmr =
+          (_gender == 'Male')
+              ? (10 * w) + (6.25 * h) - (5 * a) + 5
+              : (10 * w) + (6.25 * h) - (5 * a) - 161;
+
+      // TDEE with sedentary activity level (BMR * 1.2)
+      setState(() => _calculatedTDEE = (bmr * 1.2).round());
+    } catch (e) {
+      setState(() => _errorMessage = "Please enter valid numbers only");
+    }
   }
 
   @override
@@ -1975,7 +2010,7 @@ class _BMICalculatorFormState extends State<_BMICalculatorForm> {
               const SizedBox(width: 12),
               Expanded(
                 child: DropdownButtonFormField<String>(
-                  value: _gender,
+                  initialValue: _gender,
                   decoration: InputDecoration(
                     labelText: "Gender",
                     border: OutlineInputBorder(
@@ -1994,6 +2029,15 @@ class _BMICalculatorFormState extends State<_BMICalculatorForm> {
             ],
           ),
           const SizedBox(height: 20),
+          // Show error message if any
+          if (_errorMessage != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                _errorMessage!,
+                style: const TextStyle(color: Colors.red, fontSize: 14),
+              ),
+            ),
           if (_calculatedTDEE != null)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

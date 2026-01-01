@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -21,7 +20,7 @@ class RecommendedPage extends StatefulWidget {
 class _RecommendedPageState extends State<RecommendedPage>
     with SingleTickerProviderStateMixin {
   bool _isLoading = true;
-  int _dataLimit = 10;
+  final int _dataLimit = 10;
   List<String> _userPreferences = [];
   List<String> _userFavorites = [];
 
@@ -61,7 +60,9 @@ class _RecommendedPageState extends State<RecommendedPage>
         if (permission == LocationPermission.denied) return;
       }
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
 
       if (mounted) {
@@ -71,7 +72,7 @@ class _RecommendedPageState extends State<RecommendedPage>
         _fetchGoogleRecommendations();
       }
     } catch (e) {
-      print("Error getting location: $e");
+      debugPrint("Error getting location: $e");
     }
   }
 
@@ -89,8 +90,10 @@ class _RecommendedPageState extends State<RecommendedPage>
         });
       }
     } catch (e) {
-      print("Google Fetch Error: $e");
-      if (mounted) setState(() => _isGoogleLoading = false);
+      debugPrint("Google Fetch Error: $e");
+      if (mounted) {
+        setState(() => _isGoogleLoading = false);
+      }
     }
   }
 
@@ -169,6 +172,8 @@ class _RecommendedPageState extends State<RecommendedPage>
 
   Future<List<DocumentSnapshot>> _getCollaborativeRecommendations() async {
     if (_currentUser == null || _userPreferences.isEmpty) return [];
+    
+    // First try: Find users with similar preferences
     final similarUsersSnapshot =
         await FirebaseFirestore.instance
             .collection('users')
@@ -176,16 +181,29 @@ class _RecommendedPageState extends State<RecommendedPage>
             .where('uid', isNotEqualTo: _currentUser!.uid)
             .limit(10)
             .get();
-    if (similarUsersSnapshot.docs.isEmpty) return [];
+    
     Set<String> recommendedIds = {};
-    for (var userDoc in similarUsersSnapshot.docs) {
-      List<String> favorites = List<String>.from(
-        userDoc.data()['favorites'] ?? [],
-      );
-      recommendedIds.addAll(favorites);
+    
+    if (similarUsersSnapshot.docs.isNotEmpty) {
+      for (var userDoc in similarUsersSnapshot.docs) {
+        List<String> favorites = List<String>.from(
+          userDoc.data()['favorites'] ?? [],
+        );
+        recommendedIds.addAll(favorites);
+      }
+      recommendedIds.removeAll(_userFavorites);
     }
-    recommendedIds.removeAll(_userFavorites);
-    if (recommendedIds.isEmpty) return [];
+    
+    // Fallback: If no community favorites, show popular restaurants
+    if (recommendedIds.isEmpty) {
+      final popularSnapshot = await FirebaseFirestore.instance
+          .collection('restaurants')
+          .orderBy('viewCount', descending: true)
+          .limit(10)
+          .get();
+      return popularSnapshot.docs;
+    }
+    
     List<String> finalIdList = recommendedIds.toList();
     if (finalIdList.length > 30) finalIdList = finalIdList.sublist(0, 30);
     final recommendationsSnapshot =
@@ -296,8 +314,9 @@ class _RecommendedPageState extends State<RecommendedPage>
 
   Widget _buildBody() {
     if (_isLoading) return const Center(child: CircularProgressIndicator());
-    if (_currentUser == null)
+    if (_currentUser == null) {
       return const Center(child: Text("Please log in to see recommendations."));
+    }
 
     if (_userPreferences.isEmpty) {
       return Center(
@@ -517,6 +536,7 @@ class _RecommendedPageState extends State<RecommendedPage>
                       // ⭐️ LOG HISTORY
                       await addToViewHistory(context, data['id'], data);
 
+                      if (!context.mounted) return;
                       if (!isGoogle) _trackRestaurantView(data['id']);
                       Navigator.push(
                         context,
@@ -593,14 +613,16 @@ class _RecommendedPageState extends State<RecommendedPage>
 
   // 2. Collaborative (Unchanged)
   Widget _buildCollaborativeList() {
-    if (_collaborativeRecommendationsFuture == null)
+    if (_collaborativeRecommendationsFuture == null) {
       return const SizedBox.shrink();
+    }
 
     return FutureBuilder<List<DocumentSnapshot>>(
       future: _collaborativeRecommendationsFuture,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting)
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildSkeletonList();
+        }
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return _buildEmptyState(
             "No community data yet.",
@@ -630,6 +652,7 @@ class _RecommendedPageState extends State<RecommendedPage>
                     // ⭐️ LOG HISTORY
                     await addToViewHistory(context, doc.id, data);
 
+                    if (!context.mounted) return;
                     _trackRestaurantView(doc.id);
                     Navigator.push(
                       context,
@@ -701,7 +724,7 @@ class _RecommendedRestaurantCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

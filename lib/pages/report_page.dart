@@ -62,11 +62,11 @@ class _ReportPageState extends State<ReportPage> {
       if (response.statusCode == 200) {
         return jsonResponse['secure_url'];
       } else {
-        print('Upload failed: ${jsonResponse['error']['message']}');
+        debugPrint('Upload failed: ${jsonResponse['error']['message']}');
         return null;
       }
     } catch (e) {
-      print("Error uploading image: $e");
+      debugPrint("Error uploading image: $e");
       return null;
     }
   }

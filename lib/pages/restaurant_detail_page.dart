@@ -47,6 +47,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
     if (await canLaunchUrl(googleMapsUrl)) {
       await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Could not open Google Maps.")),
       );
@@ -101,6 +102,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
       await userRef.update({
         'favorites': FieldValue.arrayRemove([widget.restaurantId]),
       });
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Removed from Favorites")));
@@ -108,6 +110,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
       await userRef.update({
         'favorites': FieldValue.arrayUnion([widget.restaurantId]),
       });
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Added to Favorites")));
@@ -195,7 +198,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withOpacity(0.7),
+                          Colors.black.withValues(alpha: 0.7),
                         ],
                       ),
                     ),
@@ -479,7 +482,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -491,7 +494,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
-                  colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                  colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
                 ),
               ),
               alignment: Alignment.bottomLeft,
@@ -518,7 +521,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -560,11 +563,12 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
               .orderBy('likeCount', descending: true)
               .snapshots(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty)
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Text(
             "No menu items uploaded by partner.",
             style: TextStyle(color: Colors.grey),
           );
+        }
 
         return ListView.builder(
           padding: EdgeInsets.zero,
@@ -663,11 +667,12 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
               .limit(2)
               .snapshots(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty)
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Text(
             "No reviews yet.",
             style: TextStyle(color: Colors.grey),
           );
+        }
 
         return Column(
           children:

@@ -51,10 +51,13 @@ class _LoginPageState extends State<LoginPage> {
           }
         } else {
           await FirebaseAuth.instance.signOut();
-          if (mounted) _showVerificationDialog(user);
+          if (mounted) {
+            _showVerificationDialog(user);
+          }
         }
       }
     } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.message ?? "Login failed")),
       );
@@ -77,6 +80,7 @@ class _LoginPageState extends State<LoginPage> {
           TextButton(
             onPressed: () async {
               await user.sendEmailVerification();
+              if (!context.mounted) return;
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text("Verification email resent!")),

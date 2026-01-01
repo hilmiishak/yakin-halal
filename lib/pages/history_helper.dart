@@ -22,7 +22,7 @@ Future<void> addToViewHistory(
   }
 
   if (finalId.isEmpty) {
-    print("❌ Error: No valid ID found for history logging: ${data['name']}");
+    debugPrint("❌ Error: No valid ID found for history logging: ${data['name']}");
     return;
   }
 
@@ -48,9 +48,9 @@ Future<void> addToViewHistory(
     // 3. Write Data (Set with merge)
     await ref.set(historyData, SetOptions(merge: true));
 
-    print("✅ History Saved: ${data['name']} ($finalId)");
+    debugPrint("✅ History Saved: ${data['name']} ($finalId)");
   } catch (e) {
-    print("❌ Error updating view history: $e");
+    debugPrint("❌ Error updating view history: $e");
     // Only show snackbar if context is valid and mounted
     if (context.mounted) {
       ScaffoldMessenger.of(

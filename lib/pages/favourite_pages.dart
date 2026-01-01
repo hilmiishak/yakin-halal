@@ -146,7 +146,7 @@ class FavouriteCard extends StatelessWidget {
       },
       child: Card(
         elevation: 4,
-        shadowColor: Colors.black.withOpacity(0.2),
+        shadowColor: Colors.black.withValues(alpha: 0.2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         margin: const EdgeInsets.only(bottom: 16),
         clipBehavior: Clip.antiAlias, // Ensures content respects the border radius
@@ -172,7 +172,7 @@ class FavouriteCard extends StatelessWidget {
                   left: 8,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.4),
+                      color: Colors.black.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -189,7 +189,7 @@ class FavouriteCard extends StatelessWidget {
                       final String address = data['location'] ?? '';
 
                       // ⭐️ The Share Function
-                      Share.share("Check out $name! 📍 Located at: $address. Found on the YakinHalal app.");
+                      SharePlus.instance.share(ShareParams(text: "Check out $name! 📍 Located at: $address. Found on the YakinHalal app."));
                     },
                   ),
                  ],

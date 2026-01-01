@@ -110,8 +110,10 @@ class _FindRestaurantState extends State<FindRestaurant> {
       }
 
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
+        ),
       );
 
       if (mounted) {
@@ -290,7 +292,7 @@ class _FindRestaurantState extends State<FindRestaurant> {
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 5,
                       ),
                     ],
@@ -321,7 +323,7 @@ class _FindRestaurantState extends State<FindRestaurant> {
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 5,
                       ),
                     ],
@@ -373,8 +375,9 @@ class _FindRestaurantState extends State<FindRestaurant> {
   }
 
   Widget _buildMainContent() {
-    if (_isLoadingLocation)
+    if (_isLoadingLocation) {
       return const Center(child: CircularProgressIndicator());
+    }
     if (_locationError != null) {
       return Center(
         child: Column(
@@ -424,8 +427,9 @@ class _FindRestaurantState extends State<FindRestaurant> {
                     .where('status', isEqualTo: 'approved')
                     .snapshots(),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting)
+              if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
+              }
 
               List<RestaurantWithDistance> allItems = [];
               List<RestaurantWithDistance> firebaseItems = [];
@@ -454,8 +458,9 @@ class _FindRestaurantState extends State<FindRestaurant> {
                         ) ??
                         false;
                     menuMatch = _hasMenuMatch(data, searchQuery);
-                    if (menuMatch)
+                    if (menuMatch) {
                       matchedItem = _findMatchedMenuItem(data, searchQuery);
+                    }
                     matchesSearch = nameMatch || cuisineMatch || menuMatch;
                   }
 
@@ -539,13 +544,14 @@ class _FindRestaurantState extends State<FindRestaurant> {
               allItems =
                   allItems.where((item) => seenIds.add(item.id)).toList();
 
-              if (allItems.isEmpty)
+              if (allItems.isEmpty) {
                 return const Center(
                   child: Text(
                     "No restaurants found.",
                     style: TextStyle(color: Colors.grey),
                   ),
                 );
+              }
 
               return ListView.builder(
                 padding: const EdgeInsets.only(bottom: 20),
@@ -557,6 +563,7 @@ class _FindRestaurantState extends State<FindRestaurant> {
                       // ⭐️ LOG HISTORY
                       await addToViewHistory(context, item.id, item.data);
 
+                      if (!context.mounted) return;
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -670,10 +677,10 @@ class RestaurantCard extends StatelessWidget {
         border:
             hasMenuMatch
                 ? Border.all(color: Colors.blue.shade700, width: 2)
-                : Border.all(color: Colors.grey.withOpacity(0.1), width: 1),
+                : Border.all(color: Colors.grey.withValues(alpha: 0.1), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

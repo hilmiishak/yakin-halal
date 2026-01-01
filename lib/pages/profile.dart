@@ -54,7 +54,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _username = _currentUser.email?.split('@').first ?? 'New User';
       }
     } catch (e) {
-      print("Error fetching user data: $e");
+      debugPrint("Error fetching user data: $e");
       _username = _currentUser.email?.split('@').first ?? 'New User';
     }
     setState(() => _isLoading = false);
@@ -100,6 +100,7 @@ class _ProfilePageState extends State<ProfilePage> {
       }
     } catch (e) {
       setState(() => _isLoading = false);
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Failed to upload image: $e")));
@@ -135,6 +136,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       .doc(_currentUser.uid)
                       .set({'name': newName}, SetOptions(merge: true));
                   setState(() => _username = newName);
+                  if (!context.mounted) return;
                   Navigator.of(context).pop();
                 }
               },
@@ -231,7 +233,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   // --- Name ---
                   Center(
                     child: Text(
-                      "${_username?.toUpperCase() ?? 'USER'}",
+                      _username?.toUpperCase() ?? 'USER',
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -352,7 +354,7 @@ class ProfileMenuItem extends StatelessWidget {
       child: Container(
         height: 60,
         decoration: BoxDecoration(
-          color: const Color(0xFFD9D9D9).withOpacity(0.5),
+          color: const Color(0xFFD9D9D9).withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(100),
         ),
         child: Padding(

@@ -83,7 +83,7 @@ class HalalBadge extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: (type == HalalType.certified ? Colors.green : Colors.blue)
-                .withOpacity(0.3),
+                .withValues(alpha: 0.3),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -156,7 +156,7 @@ class TrustShield extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: _trustColor.withOpacity(0.1),
+            color: _trustColor.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(_trustIcon, size: 14, color: _trustColor),

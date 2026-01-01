@@ -60,7 +60,7 @@ class _PreferencePageState extends State<PreferencePage> {
         });
       }
     } catch (e) {
-      print("Error loading prefs: $e");
+      debugPrint("Error loading prefs: $e");
     } finally {
       setState(() => _isLoading = false);
     }
@@ -104,7 +104,7 @@ class _PreferencePageState extends State<PreferencePage> {
         }
       }
     } catch (e) {
-      print("Error saving preferences: $e");
+      debugPrint("Error saving preferences: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to save preferences: $e')),

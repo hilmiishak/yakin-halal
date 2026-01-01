@@ -33,8 +33,9 @@ class GooglePlacesService {
       'maju',
       'bistro',
       'corner',
-    ]))
+    ])) {
       return 'Malaysian Food';
+    }
 
     // 🇮🇩 INDONESIAN
     if (has([
@@ -46,12 +47,14 @@ class GooglePlacesService {
       'soto',
       'jawa',
       'sate',
-    ]))
-      return 'Indonesian Food';
+    ])) {
+      return 'Indo Food'; // Matches user preference
+    }
 
     // 🇹🇭 THAI
-    if (has(['thai', 'tomyam', 'tom yam', 'tom yum', 'siam', 'bangkok']))
+    if (has(['thai', 'tomyam', 'tom yam', 'tom yum', 'siam', 'bangkok'])) {
       return 'Thai Food';
+    }
 
     // 🇨🇳 CHINESE
     if (has([
@@ -67,8 +70,9 @@ class GooglePlacesService {
       'char siew',
       'wantan',
       'wan tan',
-    ]))
+    ])) {
       return 'Chinese Food';
+    }
 
     // 🇯🇵 JAPANESE
     if (has([
@@ -80,8 +84,9 @@ class GooglePlacesService {
       'don',
       'bento',
       'izakaya',
-    ]))
-      return 'Japanese Food';
+    ])) {
+      return 'Japanese Cuisine'; // Matches user preference
+    }
 
     // 🇰🇷 KOREAN
     if (has([
@@ -92,8 +97,9 @@ class GooglePlacesService {
       'bulgogi',
       'bibimbap',
       'tteokbokki',
-    ]))
-      return 'Korean Food';
+    ])) {
+      return 'Korean Cuisine'; // Matches user preference
+    }
 
     // 🇮🇳 INDIAN
     if (has([
@@ -105,8 +111,9 @@ class GooglePlacesService {
       'naan',
       'Punjabi',
       'curry house',
-    ]))
+    ])) {
       return 'Indian Food';
+    }
 
     // 🇹🇷 TURKISH / MIDDLE EASTERN
     if (has([
@@ -122,12 +129,14 @@ class GooglePlacesService {
       'hadramawt',
       'damascus',
       'tarbush',
-    ]))
-      return 'Middle Eastern Food';
+    ])) {
+      return 'Middle Eastern'; // Matches user preference
+    }
 
     // 🇦🇿 PAKISTANI
-    if (has(['paki', 'lahore', 'karachi', 'biryani', 'chapli', 'haleem']))
+    if (has(['paki', 'lahore', 'karachi', 'biryani', 'chapli', 'haleem'])) {
       return 'Pakistani Food';
+    }
 
     // 🍔 WESTERN
     if (has([
@@ -140,8 +149,9 @@ class GooglePlacesService {
       'pasta',
       'italian',
       'pizza',
-    ]))
-      return 'Western Food';
+    ])) {
+      return 'Western (Burgers & Pizza)'; // Matches user preference
+    }
 
     // 🎯 FAST FOOD BRANDS
     if (has([
@@ -154,8 +164,9 @@ class GooglePlacesService {
       'a&w',
       'wendy',
       'shake shack',
-    ]))
-      return 'Fast Food';
+    ])) {
+      return 'Western (Burgers & Pizza)'; // Matches user preference (Fast Food = Western)
+    }
 
     // ☕️ CAFES / DESSERT
     if (has([
@@ -169,16 +180,19 @@ class GooglePlacesService {
       'bread',
       'pastry',
       'kopitiam',
-    ]))
+    ])) {
       return 'Cafe / Bakery';
+    }
 
     // 🌯 MEXICAN
-    if (has(['mexican', 'taco', 'burrito', 'quesa', 'chipotle']))
+    if (has(['mexican', 'taco', 'burrito', 'quesa', 'chipotle'])) {
       return 'Mexican Food';
+    }
 
     // 🇮🇹 ITALIAN
-    if (has(['italian', 'pasta', 'spaghetti', 'risotto']))
+    if (has(['italian', 'pasta', 'spaghetti', 'risotto'])) {
       return 'Italian Food';
+    }
 
     // ⭐ DEFAULT (for Malaysia-focused app)
     return 'Malaysian Food';
@@ -210,7 +224,7 @@ class GooglePlacesService {
       'Content-Type': 'application/json',
       'X-Goog-Api-Key': _apiKey,
       'X-Goog-FieldMask':
-          'places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.location,places.photos',
+          'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.location,places.photos',
     };
 
     try {
@@ -242,11 +256,13 @@ class GooglePlacesService {
 
           // ⭐️ APPLY CATEGORIZATION
           String restaurantName = place['displayName']['text'];
+          // ⭐️ Use Google's Place ID for unique identifier (clean alphanumeric)
+          String placeId = place['id'] ?? restaurantName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
           // ⭐️ NOW THIS CALL WORKS
           String categorizedCuisine = _categorizeRestaurant(restaurantName);
 
           return {
-            'id': 'google_${place['displayName']['text']}',
+            'id': 'google_$placeId',
             'name': restaurantName,
             'location': place['formattedAddress'],
             'cuisine': categorizedCuisine, // ⭐️ Now uses the smarter category

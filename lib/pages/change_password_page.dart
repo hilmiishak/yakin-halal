@@ -191,7 +191,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       String label, bool isObscured, VoidCallback toggleObscured) {
     return InputDecoration(
       labelText: label,
-      fillColor: const Color(0xFFD9D9D9).withOpacity(0.5),
+      fillColor: const Color(0xFFD9D9D9).withValues(alpha: 0.5),
       filled: true,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(100),

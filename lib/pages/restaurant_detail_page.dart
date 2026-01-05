@@ -494,7 +494,10 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
-                  colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
+                  colors: [
+                    Colors.black.withValues(alpha: 0.6),
+                    Colors.transparent,
+                  ],
                 ),
               ),
               alignment: Alignment.bottomLeft,

@@ -172,7 +172,7 @@ class _RecommendedPageState extends State<RecommendedPage>
 
   Future<List<DocumentSnapshot>> _getCollaborativeRecommendations() async {
     if (_currentUser == null || _userPreferences.isEmpty) return [];
-    
+
     // First try: Find users with similar preferences
     final similarUsersSnapshot =
         await FirebaseFirestore.instance
@@ -181,9 +181,9 @@ class _RecommendedPageState extends State<RecommendedPage>
             .where('uid', isNotEqualTo: _currentUser!.uid)
             .limit(10)
             .get();
-    
+
     Set<String> recommendedIds = {};
-    
+
     if (similarUsersSnapshot.docs.isNotEmpty) {
       for (var userDoc in similarUsersSnapshot.docs) {
         List<String> favorites = List<String>.from(
@@ -193,17 +193,18 @@ class _RecommendedPageState extends State<RecommendedPage>
       }
       recommendedIds.removeAll(_userFavorites);
     }
-    
+
     // Fallback: If no community favorites, show popular restaurants
     if (recommendedIds.isEmpty) {
-      final popularSnapshot = await FirebaseFirestore.instance
-          .collection('restaurants')
-          .orderBy('viewCount', descending: true)
-          .limit(10)
-          .get();
+      final popularSnapshot =
+          await FirebaseFirestore.instance
+              .collection('restaurants')
+              .orderBy('viewCount', descending: true)
+              .limit(10)
+              .get();
       return popularSnapshot.docs;
     }
-    
+
     List<String> finalIdList = recommendedIds.toList();
     if (finalIdList.length > 30) finalIdList = finalIdList.sublist(0, 30);
     final recommendationsSnapshot =

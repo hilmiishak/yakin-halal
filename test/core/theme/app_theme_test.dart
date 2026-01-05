@@ -22,9 +22,15 @@ void main() {
 
     test('halal colors should be meaningful', () {
       // Certified should be green (trust) - check green component is higher
-      expect(AppColors.halalCertified.g, greaterThan(AppColors.halalCertified.r));
+      expect(
+        AppColors.halalCertified.g,
+        greaterThan(AppColors.halalCertified.r),
+      );
       // Community should be amber/orange - check red component is higher
-      expect(AppColors.halalCommunity.r, greaterThan(AppColors.halalCommunity.b));
+      expect(
+        AppColors.halalCommunity.r,
+        greaterThan(AppColors.halalCommunity.b),
+      );
     });
 
     test('calorie colors should indicate severity', () {
@@ -45,14 +51,29 @@ void main() {
     });
 
     test('heading sizes should decrease from h1 to h4', () {
-      expect(AppTextStyles.h1.fontSize, greaterThan(AppTextStyles.h2.fontSize!));
-      expect(AppTextStyles.h2.fontSize, greaterThan(AppTextStyles.h3.fontSize!));
-      expect(AppTextStyles.h3.fontSize, greaterThan(AppTextStyles.h4.fontSize!));
+      expect(
+        AppTextStyles.h1.fontSize,
+        greaterThan(AppTextStyles.h2.fontSize!),
+      );
+      expect(
+        AppTextStyles.h2.fontSize,
+        greaterThan(AppTextStyles.h3.fontSize!),
+      );
+      expect(
+        AppTextStyles.h3.fontSize,
+        greaterThan(AppTextStyles.h4.fontSize!),
+      );
     });
 
     test('body sizes should decrease correctly', () {
-      expect(AppTextStyles.bodyLarge.fontSize, greaterThan(AppTextStyles.body.fontSize!));
-      expect(AppTextStyles.body.fontSize, greaterThan(AppTextStyles.bodySmall.fontSize!));
+      expect(
+        AppTextStyles.bodyLarge.fontSize,
+        greaterThan(AppTextStyles.body.fontSize!),
+      );
+      expect(
+        AppTextStyles.body.fontSize,
+        greaterThan(AppTextStyles.bodySmall.fontSize!),
+      );
     });
 
     test('headings should be bold', () {
@@ -61,7 +82,10 @@ void main() {
     });
 
     test('caption should be smaller than body', () {
-      expect(AppTextStyles.caption.fontSize, lessThan(AppTextStyles.body.fontSize!));
+      expect(
+        AppTextStyles.caption.fontSize,
+        lessThan(AppTextStyles.body.fontSize!),
+      );
     });
 
     test('error text should use error color', () {
@@ -103,10 +127,7 @@ void main() {
 
     test('dark theme should have dark scaffold background', () {
       final theme = AppTheme.dark;
-      expect(
-        theme.scaffoldBackgroundColor,
-        equals(const Color(0xFF121212)),
-      );
+      expect(theme.scaffoldBackgroundColor, equals(const Color(0xFF121212)));
     });
 
     test('button themes should have rounded corners', () {
@@ -128,10 +149,7 @@ void main() {
 
     test('snackbar should be floating', () {
       final theme = AppTheme.light;
-      expect(
-        theme.snackBarTheme.behavior,
-        equals(SnackBarBehavior.floating),
-      );
+      expect(theme.snackBarTheme.behavior, equals(SnackBarBehavior.floating));
     });
   });
 
@@ -140,9 +158,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.light,
-          home: const Scaffold(
-            body: Text('Test'),
-          ),
+          home: const Scaffold(body: Text('Test')),
         ),
       );
 
@@ -157,12 +173,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.light,
-          home: Scaffold(
-            body: Text(
-              'Heading',
-              style: AppTextStyles.h1,
-            ),
-          ),
+          home: Scaffold(body: Text('Heading', style: AppTextStyles.h1)),
         ),
       );
 
@@ -176,10 +187,7 @@ void main() {
         MaterialApp(
           theme: AppTheme.light,
           home: Scaffold(
-            body: ElevatedButton(
-              onPressed: () {},
-              child: const Text('Button'),
-            ),
+            body: ElevatedButton(onPressed: () {}, child: const Text('Button')),
           ),
         ),
       );

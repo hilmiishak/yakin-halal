@@ -65,38 +65,46 @@ class _RegistrationPageState extends State<RegistrationPage> {
     // Check strict password requirements manually to be safe
     if (!(_hasMinLength && _hasUppercase && _hasDigits && _hasSpecialChar)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fulfill all password requirements below.")),
+        const SnackBar(
+          content: Text("Please fulfill all password requirements below."),
+        ),
       );
       return;
     }
 
     if (!isAgreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("You must agree to the Terms & Privacy Policy.")),
+        const SnackBar(
+          content: Text("You must agree to the Terms & Privacy Policy."),
+        ),
       );
       return;
     }
 
-    if (passwordController.text.trim() != confirmPasswordController.text.trim()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Passwords do not match")),
-      );
+    if (passwordController.text.trim() !=
+        confirmPasswordController.text.trim()) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Passwords do not match")));
       return;
     }
 
     try {
       setState(() => isLoading = true);
 
-      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
+      final userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
 
       if (userCredential.user != null) {
         await userCredential.user!.sendEmailVerification();
-        await _saveUserToFirestore(userCredential.user!, name: fullNameController.text.trim());
+        await _saveUserToFirestore(
+          userCredential.user!,
+          name: fullNameController.text.trim(),
+        );
       }
-
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -119,8 +127,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
     if (mounted) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => PreferencePage(userId: user.uid)),
-            (route) => false, // Kill all previous history
+        MaterialPageRoute(
+          builder: (context) => PreferencePage(userId: user.uid),
+        ),
+        (route) => false, // Kill all previous history
       );
     }
   }
@@ -138,12 +148,26 @@ class _RegistrationPageState extends State<RegistrationPage> {
             Positioned(
               left: -circleSize * 0.6,
               top: -circleSize * 0.2,
-              child: Container(width: circleSize, height: circleSize, decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0x636ED2B7))),
+              child: Container(
+                width: circleSize,
+                height: circleSize,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0x636ED2B7),
+                ),
+              ),
             ),
             Positioned(
               left: circleSize * 0.005,
               top: -circleSize * 0.6,
-              child: Container(width: circleSize, height: circleSize, decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0x636ED2B7))),
+              child: Container(
+                width: circleSize,
+                height: circleSize,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0x636ED2B7),
+                ),
+              ),
             ),
 
             Center(
@@ -154,33 +178,86 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   child: Column(
                     children: [
                       const SizedBox(height: 80),
-                      const Text("Create Account", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
-                      const Text("Join YakinHalal today", style: TextStyle(fontSize: 14, color: Colors.grey, fontFamily: 'Poppins')),
+                      const Text(
+                        "Create Account",
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                      const Text(
+                        "Join YakinHalal today",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
                       const SizedBox(height: 40),
 
-                      _buildInputField("Short Name", Icons.person_outline, controller: fullNameController),
+                      _buildInputField(
+                        "Short Name",
+                        Icons.person_outline,
+                        controller: fullNameController,
+                      ),
                       const SizedBox(height: 15),
-                      _buildInputField("Email", Icons.email_outlined, controller: emailController),
+                      _buildInputField(
+                        "Email",
+                        Icons.email_outlined,
+                        controller: emailController,
+                      ),
                       const SizedBox(height: 15),
 
-                      _buildPasswordField("Password", passwordController, _isPasswordVisible, () => setState(() => _isPasswordVisible = !_isPasswordVisible)),
+                      _buildPasswordField(
+                        "Password",
+                        passwordController,
+                        _isPasswordVisible,
+                        () => setState(
+                          () => _isPasswordVisible = !_isPasswordVisible,
+                        ),
+                      ),
 
                       // ⭐️ NEW: Password Strength Visual Indicator
                       if (passwordController.text.isNotEmpty)
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 5,
+                          ),
                           child: Column(
                             children: [
-                              _buildPasswordCriteria("At least 8 characters", _hasMinLength),
-                              _buildPasswordCriteria("Contains Uppercase (A-Z)", _hasUppercase),
-                              _buildPasswordCriteria("Contains Number (0-9)", _hasDigits),
-                              _buildPasswordCriteria("Special Character (!@#\$&*~)", _hasSpecialChar),
+                              _buildPasswordCriteria(
+                                "At least 8 characters",
+                                _hasMinLength,
+                              ),
+                              _buildPasswordCriteria(
+                                "Contains Uppercase (A-Z)",
+                                _hasUppercase,
+                              ),
+                              _buildPasswordCriteria(
+                                "Contains Number (0-9)",
+                                _hasDigits,
+                              ),
+                              _buildPasswordCriteria(
+                                "Special Character (!@#\$&*~)",
+                                _hasSpecialChar,
+                              ),
                             ],
                           ),
                         ),
 
                       const SizedBox(height: 15),
-                      _buildPasswordField("Confirm Password", confirmPasswordController, _isConfirmPasswordVisible, () => setState(() => _isConfirmPasswordVisible = !_isConfirmPasswordVisible)),
+                      _buildPasswordField(
+                        "Confirm Password",
+                        confirmPasswordController,
+                        _isConfirmPasswordVisible,
+                        () => setState(
+                          () =>
+                              _isConfirmPasswordVisible =
+                                  !_isConfirmPasswordVisible,
+                        ),
+                      ),
 
                       const SizedBox(height: 20),
 
@@ -193,7 +270,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                             child: Checkbox(
                               value: isAgreedToTerms,
                               activeColor: const Color(0xFF03BF8D),
-                              onChanged: (value) => setState(() => isAgreedToTerms = value!),
+                              onChanged:
+                                  (value) =>
+                                      setState(() => isAgreedToTerms = value!),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -201,34 +280,66 @@ class _RegistrationPageState extends State<RegistrationPage> {
                             child: RichText(
                               text: TextSpan(
                                 text: "I agree to the ",
-                                style: const TextStyle(fontSize: 12, fontFamily: 'Poppins', color: Colors.black),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontFamily: 'Poppins',
+                                  color: Colors.black,
+                                ),
                                 children: [
                                   TextSpan(
                                     text: "Terms of Service",
-                                    style: TextStyle(color: Colors.teal[700], fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
-                                    recognizer: TapGestureRecognizer()
-                                      ..onTap = () {
-                                        // ⭐️ NEW: Navigate to Terms
-                                        Navigator.push(context, MaterialPageRoute(builder: (context) => const StaticInfoPage(
-                                          title: "Terms of Service",
-                                          // Content taken from your PDF
-                                          content: "By using YakinHalal, you agree to treat restaurant staff with respect and provide honest reviews.\n\nWe reserve the right to ban users who violate these terms.",
-                                        )));
-                                      },
+                                    style: TextStyle(
+                                      color: Colors.teal[700],
+                                      fontWeight: FontWeight.bold,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                    recognizer:
+                                        TapGestureRecognizer()
+                                          ..onTap = () {
+                                            // ⭐️ NEW: Navigate to Terms
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (
+                                                      context,
+                                                    ) => const StaticInfoPage(
+                                                      title: "Terms of Service",
+                                                      // Content taken from your PDF
+                                                      content:
+                                                          "By using YakinHalal, you agree to treat restaurant staff with respect and provide honest reviews.\n\nWe reserve the right to ban users who violate these terms.",
+                                                    ),
+                                              ),
+                                            );
+                                          },
                                   ),
                                   const TextSpan(text: " and "),
                                   TextSpan(
                                     text: "Privacy Policy",
-                                    style: TextStyle(color: Colors.teal[700], fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
-                                    recognizer: TapGestureRecognizer()
-                                      ..onTap = () {
-                                        // ⭐️ NEW: Navigate to Privacy
-                                        Navigator.push(context, MaterialPageRoute(builder: (context) => const StaticInfoPage(
-                                          title: "Privacy Policy",
-                                          // Content taken from your PDF
-                                          content: "1. Data Collection\nWe collect your email and food preferences to improve recommendations.\n\n2. Data Security\nYour data is stored securely on Google Firebase.",
-                                        )));
-                                      },
+                                    style: TextStyle(
+                                      color: Colors.teal[700],
+                                      fontWeight: FontWeight.bold,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                    recognizer:
+                                        TapGestureRecognizer()
+                                          ..onTap = () {
+                                            // ⭐️ NEW: Navigate to Privacy
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (
+                                                      context,
+                                                    ) => const StaticInfoPage(
+                                                      title: "Privacy Policy",
+                                                      // Content taken from your PDF
+                                                      content:
+                                                          "1. Data Collection\nWe collect your email and food preferences to improve recommendations.\n\n2. Data Security\nYour data is stored securely on Google Firebase.",
+                                                    ),
+                                              ),
+                                            );
+                                          },
                                   ),
                                 ],
                               ),
@@ -243,9 +354,27 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         width: double.infinity,
                         height: 55,
                         child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF03BF8D), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
-                          onPressed: isLoading ? null : createUserWithEmailAndPassword,
-                          child: isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text("SIGN UP", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF03BF8D),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          onPressed:
+                              isLoading ? null : createUserWithEmailAndPassword,
+                          child:
+                              isLoading
+                                  ? const CircularProgressIndicator(
+                                    color: Colors.white,
+                                  )
+                                  : const Text(
+                                    "SIGN UP",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                         ),
                       ),
 
@@ -253,10 +382,25 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text("Already have an account? ", style: TextStyle(fontFamily: 'Poppins')),
+                          const Text(
+                            "Already have an account? ",
+                            style: TextStyle(fontFamily: 'Poppins'),
+                          ),
                           TextButton(
-                            onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginPage())),
-                            child: const Text("Sign in", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF4DBE9C))),
+                            onPressed:
+                                () => Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const LoginPage(),
+                                  ),
+                                ),
+                            child: const Text(
+                              "Sign in",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF4DBE9C),
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -276,16 +420,33 @@ class _RegistrationPageState extends State<RegistrationPage> {
   Widget _buildPasswordCriteria(String text, bool isMet) {
     return Row(
       children: [
-        Icon(isMet ? Icons.check_circle : Icons.circle_outlined, color: isMet ? Colors.green : Colors.grey, size: 14),
+        Icon(
+          isMet ? Icons.check_circle : Icons.circle_outlined,
+          color: isMet ? Colors.green : Colors.grey,
+          size: 14,
+        ),
         const SizedBox(width: 6),
-        Text(text, style: TextStyle(fontSize: 11, color: isMet ? Colors.green : Colors.grey)),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: 11,
+            color: isMet ? Colors.green : Colors.grey,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildInputField(String hint, IconData icon, {TextEditingController? controller}) {
+  Widget _buildInputField(
+    String hint,
+    IconData icon, {
+    TextEditingController? controller,
+  }) {
     return Container(
-      decoration: BoxDecoration(color: const Color(0xFFD9D9D9), borderRadius: BorderRadius.circular(30)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD9D9D9),
+        borderRadius: BorderRadius.circular(30),
+      ),
       child: TextFormField(
         controller: controller,
         validator: (value) => value!.isEmpty ? "Enter $hint" : null,
@@ -299,16 +460,27 @@ class _RegistrationPageState extends State<RegistrationPage> {
     );
   }
 
-  Widget _buildPasswordField(String hint, TextEditingController controller, bool isVisible, VoidCallback onToggle) {
+  Widget _buildPasswordField(
+    String hint,
+    TextEditingController controller,
+    bool isVisible,
+    VoidCallback onToggle,
+  ) {
     return Container(
-      decoration: BoxDecoration(color: const Color(0xFFD9D9D9), borderRadius: BorderRadius.circular(30)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD9D9D9),
+        borderRadius: BorderRadius.circular(30),
+      ),
       child: TextFormField(
         controller: controller,
         obscureText: !isVisible,
         decoration: InputDecoration(
           prefixIcon: Icon(Icons.lock_outline, color: Colors.grey[700]),
           suffixIcon: IconButton(
-            icon: Icon(isVisible ? Icons.visibility : Icons.visibility_off, color: Colors.grey[700]),
+            icon: Icon(
+              isVisible ? Icons.visibility : Icons.visibility_off,
+              color: Colors.grey[700],
+            ),
             onPressed: onToggle,
           ),
           border: InputBorder.none,

@@ -5,12 +5,12 @@ import 'package:projekfyp/widgets/halal_badge.dart';
 void main() {
   group('HalalBadge Widget', () {
     group('Certified Badge', () {
-      testWidgets('should display correct icon for certified badge', (tester) async {
+      testWidgets('should display correct icon for certified badge', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
-            home: Scaffold(
-              body: HalalBadge(type: HalalType.certified),
-            ),
+            home: Scaffold(body: HalalBadge(type: HalalType.certified)),
           ),
         );
 
@@ -18,19 +18,21 @@ void main() {
         expect(find.byIcon(Icons.people), findsNothing);
       });
 
-      testWidgets('should display "Certified" text in full mode', (tester) async {
+      testWidgets('should display "Certified" text in full mode', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
-            home: Scaffold(
-              body: HalalBadge(type: HalalType.certified),
-            ),
+            home: Scaffold(body: HalalBadge(type: HalalType.certified)),
           ),
         );
 
         expect(find.text('Certified Halal'), findsOneWidget);
       });
 
-      testWidgets('should display "Certified" text in compact mode', (tester) async {
+      testWidgets('should display "Certified" text in compact mode', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -42,7 +44,9 @@ void main() {
         expect(find.text('Certified'), findsOneWidget);
       });
 
-      testWidgets('should use green color scheme for certified', (tester) async {
+      testWidgets('should use green color scheme for certified', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -63,12 +67,12 @@ void main() {
     });
 
     group('Community Badge', () {
-      testWidgets('should display correct icon for community badge', (tester) async {
+      testWidgets('should display correct icon for community badge', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
-            home: Scaffold(
-              body: HalalBadge(type: HalalType.community),
-            ),
+            home: Scaffold(body: HalalBadge(type: HalalType.community)),
           ),
         );
 
@@ -76,19 +80,21 @@ void main() {
         expect(find.byIcon(Icons.verified), findsNothing);
       });
 
-      testWidgets('should display "Community Verified" text in full mode', (tester) async {
+      testWidgets('should display "Community Verified" text in full mode', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
-            home: Scaffold(
-              body: HalalBadge(type: HalalType.community),
-            ),
+            home: Scaffold(body: HalalBadge(type: HalalType.community)),
           ),
         );
 
         expect(find.text('Community Verified'), findsOneWidget);
       });
 
-      testWidgets('should display "Community Verified" text in compact mode', (tester) async {
+      testWidgets('should display "Community Verified" text in compact mode', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -170,9 +176,7 @@ void main() {
       testWidgets('should default to non-compact mode', (tester) async {
         await tester.pumpWidget(
           const MaterialApp(
-            home: Scaffold(
-              body: HalalBadge(type: HalalType.certified),
-            ),
+            home: Scaffold(body: HalalBadge(type: HalalType.certified)),
           ),
         );
 

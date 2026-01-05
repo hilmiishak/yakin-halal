@@ -4,14 +4,8 @@ import 'package:projekfyp/core/constants/app_constants.dart';
 void main() {
   group('ApiConstants', () {
     test('googlePlacesBaseUrl should be valid URL', () {
-      expect(
-        ApiConstants.googlePlacesBaseUrl,
-        startsWith('https://'),
-      );
-      expect(
-        ApiConstants.googlePlacesBaseUrl,
-        contains('googleapis.com'),
-      );
+      expect(ApiConstants.googlePlacesBaseUrl, startsWith('https://'));
+      expect(ApiConstants.googlePlacesBaseUrl, contains('googleapis.com'));
     });
 
     test('defaultSearchRadiusMeters should be reasonable', () {

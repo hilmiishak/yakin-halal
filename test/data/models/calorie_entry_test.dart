@@ -14,11 +14,7 @@ void main() {
           'imageUrl': 'https://example.com/nasi-lemak.jpg',
           'timestamp': '2026-01-01T12:00:00.000Z',
           'mealType': 'lunch',
-          'nutritionData': {
-            'protein': 15,
-            'carbs': 80,
-            'fat': 25,
-          },
+          'nutritionData': {'protein': 15, 'carbs': 80, 'fat': 25},
         };
 
         // Act
@@ -37,10 +33,7 @@ void main() {
 
       test('should handle missing optional fields', () {
         // Arrange
-        final data = {
-          'userId': 'user-123',
-          'calories': 200,
-        };
+        final data = {'userId': 'user-123', 'calories': 200};
 
         // Act
         final entry = CalorieEntry.fromFirestore(data, 'id');
@@ -69,10 +62,7 @@ void main() {
 
       test('should default calories to 0 if missing', () {
         // Arrange
-        final data = {
-          'userId': 'user-123',
-          'foodName': 'Test Food',
-        };
+        final data = {'userId': 'user-123', 'foodName': 'Test Food'};
 
         // Act
         final entry = CalorieEntry.fromFirestore(data, 'id');
@@ -118,10 +108,7 @@ void main() {
         );
 
         // Act
-        final copy = original.copyWith(
-          foodName: 'Modified',
-          calories: 200,
-        );
+        final copy = original.copyWith(foodName: 'Modified', calories: 200);
 
         // Assert
         expect(copy.id, equals('id')); // unchanged

@@ -76,11 +76,7 @@ void main() {
       });
 
       test('should return null for expired entries', () {
-        cache.put(
-          'expired',
-          'value',
-          ttl: const Duration(milliseconds: 1),
-        );
+        cache.put('expired', 'value', ttl: const Duration(milliseconds: 1));
 
         // Wait for expiration
         Future.delayed(const Duration(milliseconds: 10), () {

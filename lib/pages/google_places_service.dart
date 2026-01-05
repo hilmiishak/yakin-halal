@@ -257,7 +257,9 @@ class GooglePlacesService {
           // ⭐️ APPLY CATEGORIZATION
           String restaurantName = place['displayName']['text'];
           // ⭐️ Use Google's Place ID for unique identifier (clean alphanumeric)
-          String placeId = place['id'] ?? restaurantName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+          String placeId =
+              place['id'] ??
+              restaurantName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
           // ⭐️ NOW THIS CALL WORKS
           String categorizedCuisine = _categorizeRestaurant(restaurantName);
 

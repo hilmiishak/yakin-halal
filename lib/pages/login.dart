@@ -32,10 +32,11 @@ class _LoginPageState extends State<LoginPage> {
     try {
       setState(() => isLoading = true);
 
-      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
+      final userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
 
       final user = userCredential.user;
 
@@ -46,7 +47,8 @@ class _LoginPageState extends State<LoginPage> {
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => const DashboardPage()),
-                  (route) => false, // This condition 'false' removes everything before
+              (route) =>
+                  false, // This condition 'false' removes everything before
             );
           }
         } else {
@@ -58,9 +60,9 @@ class _LoginPageState extends State<LoginPage> {
       }
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? "Login failed")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message ?? "Login failed")));
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -69,27 +71,30 @@ class _LoginPageState extends State<LoginPage> {
   void _showVerificationDialog(User user) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Email Not Verified"),
-        content: const Text("Please check your inbox and verify your email before logging in."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Email Not Verified"),
+            content: const Text(
+              "Please check your inbox and verify your email before logging in.",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("OK"),
+              ),
+              TextButton(
+                onPressed: () async {
+                  await user.sendEmailVerification();
+                  if (!context.mounted) return;
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Verification email resent!")),
+                  );
+                },
+                child: const Text("Resend Email"),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () async {
-              await user.sendEmailVerification();
-              if (!context.mounted) return;
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Verification email resent!")),
-              );
-            },
-            child: const Text("Resend Email"),
-          ),
-        ],
-      ),
     );
   }
 
@@ -106,12 +111,26 @@ class _LoginPageState extends State<LoginPage> {
             Positioned(
               left: -circleSize * 0.6,
               top: -circleSize * 0.2,
-              child: Container(width: circleSize, height: circleSize, decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0x636ED2B7))),
+              child: Container(
+                width: circleSize,
+                height: circleSize,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0x636ED2B7),
+                ),
+              ),
             ),
             Positioned(
               left: circleSize * 0.005,
               top: -circleSize * 0.6,
-              child: Container(width: circleSize, height: circleSize, decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0x636ED2B7))),
+              child: Container(
+                width: circleSize,
+                height: circleSize,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0x636ED2B7),
+                ),
+              ),
             ),
 
             Center(
@@ -133,13 +152,21 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 40),
 
-                      _buildInputField("Enter your email", Icons.email_outlined, controller: emailController),
+                      _buildInputField(
+                        "Enter your email",
+                        Icons.email_outlined,
+                        controller: emailController,
+                      ),
                       const SizedBox(height: 20),
 
-                      _buildPasswordField("Enter your password",
-                          controller: passwordController,
-                          isVisible: _isPasswordVisible,
-                          onToggle: () => setState(() => _isPasswordVisible = !_isPasswordVisible)
+                      _buildPasswordField(
+                        "Enter your password",
+                        controller: passwordController,
+                        isVisible: _isPasswordVisible,
+                        onToggle:
+                            () => setState(
+                              () => _isPasswordVisible = !_isPasswordVisible,
+                            ),
                       ),
 
                       Align(
@@ -148,7 +175,10 @@ class _LoginPageState extends State<LoginPage> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => const ForgotPasswordPage(),
+                              ),
                             );
                           },
                           child: const Text(
@@ -175,18 +205,22 @@ class _LoginPageState extends State<LoginPage> {
                               borderRadius: BorderRadius.circular(30),
                             ),
                           ),
-                          onPressed: isLoading ? null : loginUserWithEmailAndPassword,
-                          child: isLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
-                              : const Text(
-                            "LOGIN",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
+                          onPressed:
+                              isLoading ? null : loginUserWithEmailAndPassword,
+                          child:
+                              isLoading
+                                  ? const CircularProgressIndicator(
+                                    color: Colors.white,
+                                  )
+                                  : const Text(
+                                    "LOGIN",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
                         ),
                       ),
 
@@ -198,14 +232,18 @@ class _LoginPageState extends State<LoginPage> {
                         children: [
                           const Text(
                             "Don’t have an account? ",
-                            style: TextStyle(color: Colors.black, fontFamily: 'Poppins'),
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontFamily: 'Poppins',
+                            ),
                           ),
                           TextButton(
                             onPressed: () {
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const RegistrationPage(),
+                                  builder:
+                                      (context) => const RegistrationPage(),
                                 ),
                               );
                             },
@@ -232,38 +270,73 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildInputField(String hint, IconData icon, {TextEditingController? controller}) {
+  Widget _buildInputField(
+    String hint,
+    IconData icon, {
+    TextEditingController? controller,
+  }) {
     return Container(
-      decoration: BoxDecoration(color: const Color(0xFFD9D9D9), borderRadius: BorderRadius.circular(30)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD9D9D9),
+        borderRadius: BorderRadius.circular(30),
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: TextFormField(
         controller: controller,
-        validator: (value) => (value == null || value.isEmpty) ? "Please enter $hint" : null,
+        validator:
+            (value) =>
+                (value == null || value.isEmpty) ? "Please enter $hint" : null,
         decoration: InputDecoration(
           icon: Icon(icon, color: Colors.grey[600]),
           border: InputBorder.none,
           hintText: hint,
-          hintStyle: const TextStyle(fontSize: 14, fontFamily: 'Poppins', color: Colors.black54),
+          hintStyle: const TextStyle(
+            fontSize: 14,
+            fontFamily: 'Poppins',
+            color: Colors.black54,
+          ),
           contentPadding: const EdgeInsets.symmetric(vertical: 15),
         ),
       ),
     );
   }
 
-  Widget _buildPasswordField(String hint, {required TextEditingController controller, required bool isVisible, required VoidCallback onToggle}) {
+  Widget _buildPasswordField(
+    String hint, {
+    required TextEditingController controller,
+    required bool isVisible,
+    required VoidCallback onToggle,
+  }) {
     return Container(
-      decoration: BoxDecoration(color: const Color(0xFFD9D9D9), borderRadius: BorderRadius.circular(30)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD9D9D9),
+        borderRadius: BorderRadius.circular(30),
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: TextFormField(
         controller: controller,
         obscureText: !isVisible,
-        validator: (value) => (value == null || value.isEmpty) ? "Please enter password" : null,
+        validator:
+            (value) =>
+                (value == null || value.isEmpty)
+                    ? "Please enter password"
+                    : null,
         decoration: InputDecoration(
           icon: const Icon(Icons.lock_outline, color: Colors.grey),
-          suffixIcon: IconButton(icon: Icon(isVisible ? Icons.visibility : Icons.visibility_off, color: Colors.grey), onPressed: onToggle),
+          suffixIcon: IconButton(
+            icon: Icon(
+              isVisible ? Icons.visibility : Icons.visibility_off,
+              color: Colors.grey,
+            ),
+            onPressed: onToggle,
+          ),
           border: InputBorder.none,
           hintText: hint,
-          hintStyle: const TextStyle(fontSize: 14, fontFamily: 'Poppins', color: Colors.black54),
+          hintStyle: const TextStyle(
+            fontSize: 14,
+            fontFamily: 'Poppins',
+            color: Colors.black54,
+          ),
           contentPadding: const EdgeInsets.symmetric(vertical: 15),
         ),
       ),

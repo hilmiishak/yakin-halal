@@ -13,11 +13,9 @@ class AuthService {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
-  AuthService({
-    FirebaseAuth? auth,
-    FirebaseFirestore? firestore,
-  })  : _auth = auth ?? FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+  AuthService({FirebaseAuth? auth, FirebaseFirestore? firestore})
+    : _auth = auth ?? FirebaseAuth.instance,
+      _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Get the current user
   User? get currentUser => _auth.currentUser;
@@ -85,10 +83,7 @@ class AuthService {
       await user.updateDisplayName(displayName.trim());
 
       // Create user document in Firestore
-      await _firestore
-          .collection(FirebaseCollections.users)
-          .doc(user.uid)
-          .set({
+      await _firestore.collection(FirebaseCollections.users).doc(user.uid).set({
         'email': email.trim(),
         'name': displayName.trim(),
         'createdAt': FieldValue.serverTimestamp(),
@@ -161,10 +156,9 @@ class AuthService {
       await user.updateDisplayName(displayName.trim());
 
       // Also update in Firestore
-      await _firestore
-          .collection(FirebaseCollections.users)
-          .doc(user.uid)
-          .set({'name': displayName.trim()}, SetOptions(merge: true));
+      await _firestore.collection(FirebaseCollections.users).doc(user.uid).set({
+        'name': displayName.trim(),
+      }, SetOptions(merge: true));
 
       debugPrint('Display name updated to: $displayName');
     });
@@ -210,28 +204,31 @@ class AuthService {
     batch.delete(_firestore.collection(FirebaseCollections.users).doc(userId));
 
     // Delete user's calorie entries
-    final calorieQuery = await _firestore
-        .collection(FirebaseCollections.calorieEntries)
-        .where('userId', isEqualTo: userId)
-        .get();
+    final calorieQuery =
+        await _firestore
+            .collection(FirebaseCollections.calorieEntries)
+            .where('userId', isEqualTo: userId)
+            .get();
     for (final doc in calorieQuery.docs) {
       batch.delete(doc.reference);
     }
 
     // Delete user's favorites
-    final favoritesQuery = await _firestore
-        .collection(FirebaseCollections.favorites)
-        .where('userId', isEqualTo: userId)
-        .get();
+    final favoritesQuery =
+        await _firestore
+            .collection(FirebaseCollections.favorites)
+            .where('userId', isEqualTo: userId)
+            .get();
     for (final doc in favoritesQuery.docs) {
       batch.delete(doc.reference);
     }
 
     // Delete user's reviews
-    final reviewsQuery = await _firestore
-        .collection(FirebaseCollections.reviews)
-        .where('userId', isEqualTo: userId)
-        .get();
+    final reviewsQuery =
+        await _firestore
+            .collection(FirebaseCollections.reviews)
+            .where('userId', isEqualTo: userId)
+            .get();
     for (final doc in reviewsQuery.docs) {
       batch.delete(doc.reference);
     }
@@ -247,10 +244,11 @@ class AuthService {
         throw AuthException.sessionExpired();
       }
 
-      final doc = await _firestore
-          .collection(FirebaseCollections.users)
-          .doc(user.uid)
-          .get();
+      final doc =
+          await _firestore
+              .collection(FirebaseCollections.users)
+              .doc(user.uid)
+              .get();
 
       if (!doc.exists) {
         return {
@@ -260,10 +258,7 @@ class AuthService {
         };
       }
 
-      return {
-        'uid': user.uid,
-        ...doc.data()!,
-      };
+      return {'uid': user.uid, ...doc.data()!};
     });
   }
 }

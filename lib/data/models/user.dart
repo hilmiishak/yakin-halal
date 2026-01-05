@@ -27,15 +27,22 @@ class AppUser {
       email: data['email'],
       displayName: data['name'] ?? data['displayName'],
       photoUrl: data['photoUrl'],
-      createdAt: data['createdAt'] != null
-          ? DateTime.tryParse(data['createdAt'].toString())
-          : null,
-      preferences: data['preferences'] != null
-          ? UserPreferences.fromMap(data['preferences'] as Map<String, dynamic>)
-          : const UserPreferences(),
-      calorieSettings: data['calorieSettings'] != null
-          ? CalorieSettings.fromMap(data['calorieSettings'] as Map<String, dynamic>)
-          : const CalorieSettings(),
+      createdAt:
+          data['createdAt'] != null
+              ? DateTime.tryParse(data['createdAt'].toString())
+              : null,
+      preferences:
+          data['preferences'] != null
+              ? UserPreferences.fromMap(
+                data['preferences'] as Map<String, dynamic>,
+              )
+              : const UserPreferences(),
+      calorieSettings:
+          data['calorieSettings'] != null
+              ? CalorieSettings.fromMap(
+                data['calorieSettings'] as Map<String, dynamic>,
+              )
+              : const CalorieSettings(),
     );
   }
 

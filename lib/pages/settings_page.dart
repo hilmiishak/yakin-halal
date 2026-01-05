@@ -40,10 +40,11 @@ class _SettingsPageState extends State<SettingsPage> {
       return;
     }
     try {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(_currentUser.uid)
-          .get();
+      final doc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(_currentUser.uid)
+              .get();
       if (doc.exists && mounted) {
         final data = doc.data();
         setState(() {
@@ -93,7 +94,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     try {
       Map<String, dynamic> updates = {key: value};
-      
+
       // If master toggle is off, update all sub-settings too
       if (key == 'notificationsEnabled' && !value) {
         updates = {
@@ -109,7 +110,7 @@ class _SettingsPageState extends State<SettingsPage> {
           .collection('users')
           .doc(_currentUser.uid)
           .set(updates, SetOptions(merge: true));
-      
+
       _showSnackBar(
         value ? "Notification enabled" : "Notification disabled",
         isSuccess: true,
@@ -129,171 +130,218 @@ class _SettingsPageState extends State<SettingsPage> {
     String? errorMessage;
 
     if (_currentUser?.email == null) {
-      _showSnackBar("Please log in again to delete your account", isSuccess: false);
+      _showSnackBar(
+        "Please log in again to delete your account",
+        isSuccess: false,
+      );
       return;
     }
 
     await showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.warning_amber_rounded, color: Colors.red.shade400, size: 40),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                "Delete Account",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.red.shade200),
+      builder:
+          (context) => StatefulBuilder(
+            builder:
+                (context, setDialogState) => AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Row(
+                  title: Column(
                     children: [
-                      Icon(Icons.info_outline, color: Colors.red.shade400, size: 20),
-                      const SizedBox(width: 8),
-                      const Expanded(
-                        child: Text(
-                          "This action is permanent and cannot be undone.",
-                          style: TextStyle(fontSize: 13, height: 1.4),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          shape: BoxShape.circle,
                         ),
+                        child: Icon(
+                          Icons.warning_amber_rounded,
+                          color: Colors.red.shade400,
+                          size: 40,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        "Delete Account",
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  "The following data will be deleted:",
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                ),
-                const SizedBox(height: 8),
-                _buildDeleteItem("Your profile and preferences"),
-                _buildDeleteItem("Saved favorites"),
-                _buildDeleteItem("Review history"),
-                _buildDeleteItem("Calorie tracking data"),
-                _buildDeleteItem("View history"),
-                const SizedBox(height: 20),
-                Text(
-                  "Enter your password to confirm:",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: passwordController,
-                  obscureText: !isPasswordVisible,
-                  enabled: !isLoading,
-                  decoration: InputDecoration(
-                    labelText: "Password",
-                    hintText: "Enter your password",
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(isPasswordVisible ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () => setDialogState(() => isPasswordVisible = !isPasswordVisible),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.red.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline,
+                                color: Colors.red.shade400,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              const Expanded(
+                                child: Text(
+                                  "This action is permanent and cannot be undone.",
+                                  style: TextStyle(fontSize: 13, height: 1.4),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          "The following data will be deleted:",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildDeleteItem("Your profile and preferences"),
+                        _buildDeleteItem("Saved favorites"),
+                        _buildDeleteItem("Review history"),
+                        _buildDeleteItem("Calorie tracking data"),
+                        _buildDeleteItem("View history"),
+                        const SizedBox(height: 20),
+                        Text(
+                          "Enter your password to confirm:",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: passwordController,
+                          obscureText: !isPasswordVisible,
+                          enabled: !isLoading,
+                          decoration: InputDecoration(
+                            labelText: "Password",
+                            hintText: "Enter your password",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                isPasswordVisible
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                              onPressed:
+                                  () => setDialogState(
+                                    () =>
+                                        isPasswordVisible = !isPasswordVisible,
+                                  ),
+                            ),
+                            errorText: errorMessage,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          "Type DELETE to confirm:",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: confirmTextController,
+                          enabled: !isLoading,
+                          textCapitalization: TextCapitalization.characters,
+                          decoration: InputDecoration(
+                            hintText: "Type DELETE",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            prefixIcon: const Icon(Icons.text_fields),
+                          ),
+                        ),
+                      ],
                     ),
-                    errorText: errorMessage,
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  "Type DELETE to confirm:",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: confirmTextController,
-                  enabled: !isLoading,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: InputDecoration(
-                    hintText: "Type DELETE",
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    prefixIcon: const Icon(Icons.text_fields),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: isLoading ? null : () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              onPressed: isLoading
-                  ? null
-                  : () async {
-                      // Validate inputs
-                      if (passwordController.text.isEmpty) {
-                        setDialogState(() => errorMessage = "Password is required");
-                        return;
-                      }
-                      if (confirmTextController.text.toUpperCase() != "DELETE") {
-                        setDialogState(() => errorMessage = "Please type DELETE to confirm");
-                        return;
-                      }
-
-                      setDialogState(() {
-                        isLoading = true;
-                        errorMessage = null;
-                      });
-
-                      // Execute deletion
-                      final success = await _executeAccountDeletion(passwordController.text.trim());
-                      
-                      if (!success && context.mounted) {
-                        setDialogState(() {
-                          isLoading = false;
-                          errorMessage = "Incorrect password. Please try again.";
-                        });
-                      }
-                    },
-              child: isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  actions: [
+                    TextButton(
+                      onPressed:
+                          isLoading ? null : () => Navigator.pop(context),
+                      child: const Text("Cancel"),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                    )
-                  : const Text("Delete My Account"),
-            ),
-          ],
-        ),
-      ),
+                      onPressed:
+                          isLoading
+                              ? null
+                              : () async {
+                                // Validate inputs
+                                if (passwordController.text.isEmpty) {
+                                  setDialogState(
+                                    () => errorMessage = "Password is required",
+                                  );
+                                  return;
+                                }
+                                if (confirmTextController.text.toUpperCase() !=
+                                    "DELETE") {
+                                  setDialogState(
+                                    () =>
+                                        errorMessage =
+                                            "Please type DELETE to confirm",
+                                  );
+                                  return;
+                                }
+
+                                setDialogState(() {
+                                  isLoading = true;
+                                  errorMessage = null;
+                                });
+
+                                // Execute deletion
+                                final success = await _executeAccountDeletion(
+                                  passwordController.text.trim(),
+                                );
+
+                                if (!success && context.mounted) {
+                                  setDialogState(() {
+                                    isLoading = false;
+                                    errorMessage =
+                                        "Incorrect password. Please try again.";
+                                  });
+                                }
+                              },
+                      child:
+                          isLoading
+                              ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                              : const Text("Delete My Account"),
+                    ),
+                  ],
+                ),
+          ),
     );
   }
 
@@ -302,10 +350,17 @@ class _SettingsPageState extends State<SettingsPage> {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Icon(Icons.remove_circle_outline, size: 16, color: Colors.red.shade300),
+          Icon(
+            Icons.remove_circle_outline,
+            size: 16,
+            color: Colors.red.shade300,
+          ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(text, style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
+            child: Text(
+              text,
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+            ),
           ),
         ],
       ),
@@ -324,14 +379,16 @@ class _SettingsPageState extends State<SettingsPage> {
       await _currentUser.reauthenticateWithCredential(credential);
 
       // Delete user data from Firestore (subcollections too)
-      final userRef = FirebaseFirestore.instance.collection('users').doc(_currentUser.uid);
-      
+      final userRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(_currentUser.uid);
+
       // Delete subcollections
       final viewHistory = await userRef.collection('view_history').get();
       for (var doc in viewHistory.docs) {
         await doc.reference.delete();
       }
-      
+
       final calorieTracker = await userRef.collection('calorie_tracker').get();
       for (var doc in calorieTracker.docs) {
         await doc.reference.delete();
@@ -377,7 +434,8 @@ class _SettingsPageState extends State<SettingsPage> {
   void _shareApp() {
     SharePlus.instance.share(
       ShareParams(
-        text: "🍽️ Check out YakinHalal - Find trusted Halal restaurants near you!\n\n"
+        text:
+            "🍽️ Check out YakinHalal - Find trusted Halal restaurants near you!\n\n"
             "Download now and discover verified Halal dining options with smart recommendations.",
         subject: "YakinHalal - Halal Restaurant Finder",
       ),
@@ -398,7 +456,8 @@ class _SettingsPageState extends State<SettingsPage> {
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: isSuccess ? Colors.green.shade600 : Colors.red.shade600,
+        backgroundColor:
+            isSuccess ? Colors.green.shade600 : Colors.red.shade600,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.all(16),
@@ -423,155 +482,185 @@ class _SettingsPageState extends State<SettingsPage> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black87),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              children: [
-                // Notifications Section
-                _buildSectionHeader("NOTIFICATIONS"),
-                _buildSettingsCard(
-                  children: [
-                    _buildSwitchTile(
-                      icon: Icons.notifications_active_outlined,
-                      iconColor: Colors.blue,
-                      title: "Push Notifications",
-                      subtitle: "Master toggle for all notifications",
-                      value: _notificationsEnabled,
-                      onChanged: (v) => _updateNotificationPreference('notificationsEnabled', v),
-                    ),
-                  ],
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : ListView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
-                
-                // Notification Types (only show if master toggle is on)
-                if (_notificationsEnabled) ...[
-                  const SizedBox(height: 8),
+                children: [
+                  // Notifications Section
+                  _buildSectionHeader("NOTIFICATIONS"),
                   _buildSettingsCard(
                     children: [
                       _buildSwitchTile(
-                        icon: Icons.restaurant_outlined,
-                        iconColor: Colors.green,
-                        title: "New Restaurant Alerts",
-                        subtitle: "When new halal restaurants are added nearby",
-                        value: _newRestaurantAlerts,
-                        onChanged: (v) => _updateNotificationPreference('newRestaurantAlerts', v),
-                      ),
-                      const Divider(height: 1),
-                      _buildSwitchTile(
-                        icon: Icons.local_offer_outlined,
-                        iconColor: Colors.orange,
-                        title: "Promotions & Deals",
-                        subtitle: "Special offers from restaurants",
-                        value: _promotionAlerts,
-                        onChanged: (v) => _updateNotificationPreference('promotionAlerts', v),
-                      ),
-                      const Divider(height: 1),
-                      _buildSwitchTile(
-                        icon: Icons.reply_outlined,
-                        iconColor: Colors.purple,
-                        title: "Review Replies",
-                        subtitle: "When restaurants reply to your reviews",
-                        value: _reviewReplies,
-                        onChanged: (v) => _updateNotificationPreference('reviewReplies', v),
-                      ),
-                      const Divider(height: 1),
-                      _buildSwitchTile(
-                        icon: Icons.calendar_today_outlined,
-                        iconColor: Colors.teal,
-                        title: "Weekly Digest",
-                        subtitle: "Summary of new restaurants & top picks",
-                        value: _weeklyDigest,
-                        onChanged: (v) => _updateNotificationPreference('weeklyDigest', v),
+                        icon: Icons.notifications_active_outlined,
+                        iconColor: Colors.blue,
+                        title: "Push Notifications",
+                        subtitle: "Master toggle for all notifications",
+                        value: _notificationsEnabled,
+                        onChanged:
+                            (v) => _updateNotificationPreference(
+                              'notificationsEnabled',
+                              v,
+                            ),
                       ),
                     ],
                   ),
+
+                  // Notification Types (only show if master toggle is on)
+                  if (_notificationsEnabled) ...[
+                    const SizedBox(height: 8),
+                    _buildSettingsCard(
+                      children: [
+                        _buildSwitchTile(
+                          icon: Icons.restaurant_outlined,
+                          iconColor: Colors.green,
+                          title: "New Restaurant Alerts",
+                          subtitle:
+                              "When new halal restaurants are added nearby",
+                          value: _newRestaurantAlerts,
+                          onChanged:
+                              (v) => _updateNotificationPreference(
+                                'newRestaurantAlerts',
+                                v,
+                              ),
+                        ),
+                        const Divider(height: 1),
+                        _buildSwitchTile(
+                          icon: Icons.local_offer_outlined,
+                          iconColor: Colors.orange,
+                          title: "Promotions & Deals",
+                          subtitle: "Special offers from restaurants",
+                          value: _promotionAlerts,
+                          onChanged:
+                              (v) => _updateNotificationPreference(
+                                'promotionAlerts',
+                                v,
+                              ),
+                        ),
+                        const Divider(height: 1),
+                        _buildSwitchTile(
+                          icon: Icons.reply_outlined,
+                          iconColor: Colors.purple,
+                          title: "Review Replies",
+                          subtitle: "When restaurants reply to your reviews",
+                          value: _reviewReplies,
+                          onChanged:
+                              (v) => _updateNotificationPreference(
+                                'reviewReplies',
+                                v,
+                              ),
+                        ),
+                        const Divider(height: 1),
+                        _buildSwitchTile(
+                          icon: Icons.calendar_today_outlined,
+                          iconColor: Colors.teal,
+                          title: "Weekly Digest",
+                          subtitle: "Summary of new restaurants & top picks",
+                          value: _weeklyDigest,
+                          onChanged:
+                              (v) => _updateNotificationPreference(
+                                'weeklyDigest',
+                                v,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ],
+
+                  // Account Section
+                  _buildSectionHeader("ACCOUNT"),
+                  _buildSettingsCard(
+                    children: [
+                      _buildNavTile(
+                        icon: Icons.lock_outline,
+                        iconColor: Colors.teal,
+                        title: "Change Password",
+                        subtitle: "Update your password",
+                        onTap:
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ChangePasswordPage(),
+                              ),
+                            ),
+                      ),
+                      const Divider(height: 1),
+                      _buildNavTile(
+                        icon: Icons.delete_forever_outlined,
+                        iconColor: Colors.red,
+                        title: "Delete Account",
+                        subtitle: "Permanently remove your account",
+                        isDestructive: true,
+                        onTap: _showDeleteAccountDialog,
+                      ),
+                    ],
+                  ),
+
+                  // Support Section
+                  _buildSectionHeader("SUPPORT"),
+                  _buildSettingsCard(
+                    children: [
+                      _buildNavTile(
+                        icon: Icons.email_outlined,
+                        iconColor: Colors.orange,
+                        title: "Contact Support",
+                        subtitle: _supportEmail,
+                        onTap: _launchEmail,
+                      ),
+                      const Divider(height: 1),
+                      _buildNavTile(
+                        icon: Icons.share_outlined,
+                        iconColor: Colors.purple,
+                        title: "Share App",
+                        subtitle: "Invite friends to YakinHalal",
+                        onTap: _shareApp,
+                      ),
+                    ],
+                  ),
+
+                  // Legal Section
+                  _buildSectionHeader("LEGAL"),
+                  _buildSettingsCard(
+                    children: [
+                      _buildNavTile(
+                        icon: Icons.shield_outlined,
+                        iconColor: Colors.green,
+                        title: "Privacy Policy",
+                        onTap:
+                            () => _showInfoPage(
+                              "Privacy Policy",
+                              _privacyPolicyContent,
+                              Icons.shield_outlined,
+                              Colors.green,
+                            ),
+                      ),
+                      const Divider(height: 1),
+                      _buildNavTile(
+                        icon: Icons.description_outlined,
+                        iconColor: Colors.indigo,
+                        title: "Terms of Service",
+                        onTap:
+                            () => _showInfoPage(
+                              "Terms of Service",
+                              _termsOfServiceContent,
+                              Icons.description_outlined,
+                              Colors.indigo,
+                            ),
+                      ),
+                    ],
+                  ),
+
+                  // About Section
+                  _buildSectionHeader("ABOUT"),
+                  _buildAboutCard(),
+
+                  const SizedBox(height: 32),
                 ],
-
-                // Account Section
-                _buildSectionHeader("ACCOUNT"),
-                _buildSettingsCard(
-                  children: [
-                    _buildNavTile(
-                      icon: Icons.lock_outline,
-                      iconColor: Colors.teal,
-                      title: "Change Password",
-                      subtitle: "Update your password",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const ChangePasswordPage()),
-                      ),
-                    ),
-                    const Divider(height: 1),
-                    _buildNavTile(
-                      icon: Icons.delete_forever_outlined,
-                      iconColor: Colors.red,
-                      title: "Delete Account",
-                      subtitle: "Permanently remove your account",
-                      isDestructive: true,
-                      onTap: _showDeleteAccountDialog,
-                    ),
-                  ],
-                ),
-
-                // Support Section
-                _buildSectionHeader("SUPPORT"),
-                _buildSettingsCard(
-                  children: [
-                    _buildNavTile(
-                      icon: Icons.email_outlined,
-                      iconColor: Colors.orange,
-                      title: "Contact Support",
-                      subtitle: _supportEmail,
-                      onTap: _launchEmail,
-                    ),
-                    const Divider(height: 1),
-                    _buildNavTile(
-                      icon: Icons.share_outlined,
-                      iconColor: Colors.purple,
-                      title: "Share App",
-                      subtitle: "Invite friends to YakinHalal",
-                      onTap: _shareApp,
-                    ),
-                  ],
-                ),
-
-                // Legal Section
-                _buildSectionHeader("LEGAL"),
-                _buildSettingsCard(
-                  children: [
-                    _buildNavTile(
-                      icon: Icons.shield_outlined,
-                      iconColor: Colors.green,
-                      title: "Privacy Policy",
-                      onTap: () => _showInfoPage(
-                        "Privacy Policy",
-                        _privacyPolicyContent,
-                        Icons.shield_outlined,
-                        Colors.green,
-                      ),
-                    ),
-                    const Divider(height: 1),
-                    _buildNavTile(
-                      icon: Icons.description_outlined,
-                      iconColor: Colors.indigo,
-                      title: "Terms of Service",
-                      onTap: () => _showInfoPage(
-                        "Terms of Service",
-                        _termsOfServiceContent,
-                        Icons.description_outlined,
-                        Colors.indigo,
-                      ),
-                    ),
-                  ],
-                ),
-
-                // About Section
-                _buildSectionHeader("ABOUT"),
-                _buildAboutCard(),
-
-                const SizedBox(height: 32),
-              ],
-            ),
+              ),
     );
   }
 
@@ -635,9 +724,18 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(subtitle, style: TextStyle(color: Colors.grey.shade500, fontSize: 13)),
+                Text(
+                  subtitle,
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                ),
               ],
             ),
           ),
@@ -692,7 +790,10 @@ class _SettingsPageState extends State<SettingsPage> {
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                        style: TextStyle(
+                          color: Colors.grey.shade500,
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ],
@@ -741,7 +842,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ],
             ),
-            child: const Icon(Icons.restaurant_menu, color: Colors.white, size: 36),
+            child: const Icon(
+              Icons.restaurant_menu,
+              color: Colors.white,
+              size: 36,
+            ),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -792,8 +897,14 @@ class _SettingsPageState extends State<SettingsPage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+            Text(
+              label,
+              style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+            ),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            ),
           ],
         ),
       ],
@@ -804,12 +915,13 @@ class _SettingsPageState extends State<SettingsPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => _EnhancedInfoPage(
-          title: title,
-          content: content,
-          icon: icon,
-          color: color,
-        ),
+        builder:
+            (_) => _EnhancedInfoPage(
+              title: title,
+              content: content,
+              icon: icon,
+              color: color,
+            ),
       ),
     );
   }
@@ -889,7 +1001,13 @@ class _EnhancedInfoPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9F8),
       appBar: AppBar(
-        title: Text(title, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w600)),
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         backgroundColor: const Color(0xFFF5F9F8),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black87),

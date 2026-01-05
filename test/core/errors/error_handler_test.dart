@@ -106,7 +106,10 @@ void main() {
 
     group('ValidationException', () {
       test('invalidInput should include field name', () {
-        final exception = ValidationException.invalidInput('email', 'must be valid');
+        final exception = ValidationException.invalidInput(
+          'email',
+          'must be valid',
+        );
         expect(exception.code, equals('INVALID_INPUT'));
         expect(exception.message, contains('email'));
         expect(exception.fieldErrors, isNotNull);

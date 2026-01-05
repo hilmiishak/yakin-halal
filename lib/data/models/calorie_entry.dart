@@ -30,9 +30,10 @@ class CalorieEntry {
       foodName: data['foodName'] ?? data['name'] ?? 'Unknown',
       calories: (data['calories'] as num?)?.toInt() ?? 0,
       imageUrl: data['imageUrl'],
-      timestamp: data['timestamp'] != null
-          ? DateTime.parse(data['timestamp'].toString())
-          : DateTime.now(),
+      timestamp:
+          data['timestamp'] != null
+              ? DateTime.parse(data['timestamp'].toString())
+              : DateTime.now(),
       mealType: data['mealType'],
       nutritionData: data['nutritionData'] as Map<String, dynamic>?,
     );
@@ -78,7 +79,8 @@ class CalorieEntry {
   String get formattedCalories => '$calories kcal';
 
   /// Get date only (without time)
-  DateTime get dateOnly => DateTime(timestamp.year, timestamp.month, timestamp.day);
+  DateTime get dateOnly =>
+      DateTime(timestamp.year, timestamp.month, timestamp.day);
 
   /// Check if entry is from today
   bool get isToday {
@@ -89,12 +91,15 @@ class CalorieEntry {
   }
 
   @override
-  String toString() => 'CalorieEntry(id: $id, food: $foodName, calories: $calories)';
+  String toString() =>
+      'CalorieEntry(id: $id, food: $foodName, calories: $calories)';
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is CalorieEntry && runtimeType == other.runtimeType && id == other.id;
+      other is CalorieEntry &&
+          runtimeType == other.runtimeType &&
+          id == other.id;
 
   @override
   int get hashCode => id.hashCode;

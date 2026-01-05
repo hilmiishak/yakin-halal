@@ -17,10 +17,7 @@ void main() {
             'halalCertifiedOnly': true,
             'maxDistanceKm': 15.0,
           },
-          'calorieSettings': {
-            'dailyLimit': 1800,
-            'goal': 'lose',
-          },
+          'calorieSettings': {'dailyLimit': 1800, 'goal': 'lose'},
         };
 
         // Act
@@ -54,9 +51,7 @@ void main() {
 
       test('should handle legacy displayName field', () {
         // Arrange
-        final data = {
-          'displayName': 'Legacy Name',
-        };
+        final data = {'displayName': 'Legacy Name'};
 
         // Act
         final user = AppUser.fromFirestore(data, 'uid');
@@ -77,9 +72,7 @@ void main() {
             favoriteCuisines: ['Chinese'],
             halalCertifiedOnly: true,
           ),
-          calorieSettings: CalorieSettings(
-            dailyLimit: 2200,
-          ),
+          calorieSettings: CalorieSettings(dailyLimit: 2200),
         );
 
         // Act
@@ -96,18 +89,12 @@ void main() {
 
     group('greetingName', () {
       test('should return first name when displayName is set', () {
-        const user = AppUser(
-          uid: 'uid',
-          displayName: 'John Doe Smith',
-        );
+        const user = AppUser(uid: 'uid', displayName: 'John Doe Smith');
         expect(user.greetingName, equals('John'));
       });
 
       test('should return email prefix when only email is set', () {
-        const user = AppUser(
-          uid: 'uid',
-          email: 'johndoe@example.com',
-        );
+        const user = AppUser(uid: 'uid', email: 'johndoe@example.com');
         expect(user.greetingName, equals('johndoe'));
       });
 
@@ -136,9 +123,7 @@ void main() {
         );
 
         // Act
-        final copy = original.copyWith(
-          displayName: 'New Name',
-        );
+        final copy = original.copyWith(displayName: 'New Name');
 
         // Assert
         expect(copy.uid, equals('uid')); // unchanged
@@ -219,11 +204,7 @@ void main() {
     });
 
     test('toMap should include all fields', () {
-      const settings = CalorieSettings(
-        dailyLimit: 2500,
-        goal: 'gain',
-        age: 25,
-      );
+      const settings = CalorieSettings(dailyLimit: 2500, goal: 'gain', age: 25);
 
       final map = settings.toMap();
 

@@ -87,10 +87,7 @@ void main() {
 
       test('should handle invalid coordinate format', () {
         // Arrange
-        final data = {
-          'name': 'Test',
-          'coordinate': 'invalid-format',
-        };
+        final data = {'name': 'Test', 'coordinate': 'invalid-format'};
 
         // Act
         final restaurant = Restaurant.fromFirestore(data, 'id');
@@ -110,10 +107,7 @@ void main() {
           'name': 'Google Restaurant',
           'vicinity': '456 Google Street',
           'geometry': {
-            'location': {
-              'lat': 3.1234,
-              'lng': 101.5678,
-            },
+            'location': {'lat': 3.1234, 'lng': 101.5678},
           },
           'rating': 4.2,
           'user_ratings_total': 500,
@@ -172,10 +166,7 @@ void main() {
         );
 
         // Act
-        final copy = original.copyWith(
-          name: 'New Name',
-          rating: 5.0,
-        );
+        final copy = original.copyWith(name: 'New Name', rating: 5.0);
 
         // Assert
         expect(copy.id, equals('id')); // unchanged
@@ -195,15 +186,18 @@ void main() {
         expect(restaurant.isCommunityVerified, isFalse);
       });
 
-      test('isCommunityVerified should return true for community_verified status', () {
-        const restaurant = Restaurant(
-          id: 'id',
-          name: 'Test',
-          halalStatus: 'community_verified',
-        );
-        expect(restaurant.isCertified, isFalse);
-        expect(restaurant.isCommunityVerified, isTrue);
-      });
+      test(
+        'isCommunityVerified should return true for community_verified status',
+        () {
+          const restaurant = Restaurant(
+            id: 'id',
+            name: 'Test',
+            halalStatus: 'community_verified',
+          );
+          expect(restaurant.isCertified, isFalse);
+          expect(restaurant.isCommunityVerified, isTrue);
+        },
+      );
 
       test('formattedRating should format rating correctly', () {
         const restaurant = Restaurant(id: 'id', name: 'Test', rating: 4.567);

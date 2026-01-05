@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:http/http.dart' as http;
 
 // Import your other pages
 import 'find_restaurant.dart';
@@ -167,6 +169,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _handleChatSubmit(String userQuery) async {
     if (userQuery.isEmpty) return;
     setState(() {
+      _isChatLoading = true;
       _chatResults = [];
       _aiReply = "";
     });
@@ -179,9 +182,15 @@ class _HomePageState extends State<HomePage> {
 
       final prompt = '''
         User query: "$userQuery"
-        Task: Extract the SINGLE most important food keyword.
-        Task 2: Write a short, exciting 1-sentence reply.
-        Return strictly JSON: {"keyword": "Burger", "reply": "Searching for juicy burgers nearby!"}
+        Task 1: Extract the SINGLE most important food keyword (e.g., "shawarma", "burger", "nasi lemak").
+        Task 2: Extract the location/area if mentioned (e.g., "bukit bintang", "KLCC", "Petaling Jaya"). If no specific location is mentioned, use "nearby".
+        Task 3: Write a short, exciting 1-sentence reply that mentions the location if specified.
+        
+        Return strictly JSON format:
+        {"keyword": "shawarma", "location": "bukit bintang", "reply": "Finding delicious shawarma spots in Bukit Bintang!"}
+        
+        If no location mentioned:
+        {"keyword": "burger", "location": "nearby", "reply": "Searching for juicy burgers nearby!"}
       ''';
 
       final response = await model.generateContent([Content.text(prompt)]);
@@ -193,15 +202,35 @@ class _HomePageState extends State<HomePage> {
           "{}";
 
       String keyword = "Food";
+      String location = "nearby";
       String reply = "Searching nearby...";
+
       final RegExp keyReg = RegExp(r'"keyword":\s*"([^"]+)"');
+      final RegExp locReg = RegExp(r'"location":\s*"([^"]+)"');
       final RegExp repReg = RegExp(r'"reply":\s*"([^"]+)"');
+
       final kMatch = keyReg.firstMatch(text);
+      final lMatch = locReg.firstMatch(text);
       final rMatch = repReg.firstMatch(text);
+
       if (kMatch != null) keyword = kMatch.group(1) ?? "Food";
+      if (lMatch != null) location = lMatch.group(1) ?? "nearby";
       if (rMatch != null) reply = rMatch.group(1) ?? "Searching...";
 
       setState(() => _aiReply = reply);
+
+      // Determine search coordinates
+      double searchLat = _currentPosition?.latitude ?? 3.1390;
+      double searchLng = _currentPosition?.longitude ?? 101.6869;
+
+      // If a specific location is mentioned, geocode it
+      if (location.toLowerCase() != "nearby") {
+        final coords = await _geocodeLocation(location);
+        if (coords != null) {
+          searchLat = coords['lat']!;
+          searchLng = coords['lng']!;
+        }
+      }
 
       List<Map<String, dynamic>> allResults = [];
 
@@ -213,18 +242,25 @@ class _HomePageState extends State<HomePage> {
               .get();
       for (var doc in fbSnapshot.docs) {
         final data = doc.data();
-        if (data['name'].toString().toLowerCase().contains(
-              keyword.toLowerCase(),
-            ) ||
-            data['cuisine'].toString().toLowerCase().contains(
-              keyword.toLowerCase(),
-            )) {
+        final nameMatch = data['name'].toString().toLowerCase().contains(
+          keyword.toLowerCase(),
+        );
+        final cuisineMatch = data['cuisine'].toString().toLowerCase().contains(
+          keyword.toLowerCase(),
+        );
+        final locationMatch =
+            location.toLowerCase() == "nearby" ||
+            data['location'].toString().toLowerCase().contains(
+              location.toLowerCase(),
+            );
+
+        if ((nameMatch || cuisineMatch) && locationMatch) {
           double dist = 9999.0;
           final GeoPoint? coord = data['coordinate'];
-          if (_currentPosition != null && coord != null) {
+          if (coord != null) {
             dist = _calculateHaversineDistance(
-              _currentPosition!.latitude,
-              _currentPosition!.longitude,
+              searchLat,
+              searchLng,
               coord.latitude,
               coord.longitude,
             );
@@ -239,43 +275,79 @@ class _HomePageState extends State<HomePage> {
         }
       }
 
-      // B. External Google Search
-      if (_currentPosition != null) {
-        final googleRes = await GooglePlacesService().searchPlaces(
-          keyword,
-          _currentPosition!.latitude,
-          _currentPosition!.longitude,
+      // B. External Google Search - include location in query if specified
+      final searchQuery =
+          location.toLowerCase() == "nearby" ? keyword : "$keyword $location";
+
+      final googleRes = await GooglePlacesService().searchPlaces(
+        searchQuery,
+        searchLat,
+        searchLng,
+      );
+      for (var item in googleRes) {
+        final GeoPoint gp = item['coordinate'];
+        double dist = _calculateHaversineDistance(
+          searchLat,
+          searchLng,
+          gp.latitude,
+          gp.longitude,
         );
-        for (var item in googleRes) {
-          final GeoPoint gp = item['coordinate'];
-          double dist = _calculateHaversineDistance(
-            _currentPosition!.latitude,
-            _currentPosition!.longitude,
-            gp.latitude,
-            gp.longitude,
-          );
 
-          final String googleId =
-              item['place_id'] ??
-              DateTime.now().millisecondsSinceEpoch.toString();
+        final String googleId =
+            item['place_id'] ??
+            DateTime.now().millisecondsSinceEpoch.toString();
 
-          allResults.add({
-            ...item,
-            'id': googleId,
-            'is_google': true,
-            'distance': "${dist.toStringAsFixed(1)} km",
-            'distVal': dist,
-          });
-        }
+        allResults.add({
+          ...item,
+          'id': googleId,
+          'is_google': true,
+          'distance': "${dist.toStringAsFixed(1)} km",
+          'distVal': dist,
+        });
       }
 
       allResults.sort(
         (a, b) => (a['distVal'] as double).compareTo(b['distVal'] as double),
       );
-      setState(() => _chatResults = allResults.take(5).toList());
+      setState(() {
+        _chatResults = allResults.take(5).toList();
+        _isChatLoading = false;
+      });
     } catch (e) {
-      setState(() => _aiReply = "I had trouble connecting. Try again!");
+      setState(() {
+        _aiReply = "I had trouble connecting. Try again!";
+        _isChatLoading = false;
+      });
       debugPrint("Chat Error: $e");
+    }
+  }
+
+  // Geocode a location name to coordinates using Google Geocoding API
+  Future<Map<String, double>?> _geocodeLocation(String locationName) async {
+    try {
+      final apiKey = dotenv.env['GOOGLE_PLACES_API_KEY'] ?? '';
+      if (apiKey.isEmpty) return null;
+
+      // Add "Malaysia" to improve accuracy for Malaysian locations
+      final query = Uri.encodeComponent("$locationName, Malaysia");
+      final url =
+          'https://maps.googleapis.com/maps/api/geocode/json?address=$query&key=$apiKey';
+
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['status'] == 'OK' && data['results'].isNotEmpty) {
+          final location = data['results'][0]['geometry']['location'];
+          return {
+            'lat': location['lat'].toDouble(),
+            'lng': location['lng'].toDouble(),
+          };
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint("Geocoding error: $e");
+      return null;
     }
   }
 

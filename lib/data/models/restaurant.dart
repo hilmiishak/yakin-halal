@@ -74,12 +74,14 @@ class Restaurant {
       halalStatus: data['halal_status'] ?? 'community_verified',
       certificationBody: data['certification_body'],
       isGooglePlace: data['is_google_place'] ?? false,
-      createdAt: data['created_at'] != null
-          ? DateTime.tryParse(data['created_at'].toString())
-          : null,
-      updatedAt: data['updated_at'] != null
-          ? DateTime.tryParse(data['updated_at'].toString())
-          : null,
+      createdAt:
+          data['created_at'] != null
+              ? DateTime.tryParse(data['created_at'].toString())
+              : null,
+      updatedAt:
+          data['updated_at'] != null
+              ? DateTime.tryParse(data['updated_at'].toString())
+              : null,
     );
   }
 

@@ -59,7 +59,6 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         _showSuccessSnackBar("Password updated successfully!");
         Navigator.of(context).pop(); // Go back to the profile page
       }
-
     } on FirebaseAuthException catch (e) {
       // 5. Handle errors
       if (e.code == 'wrong-password') {
@@ -115,10 +114,17 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 decoration: _buildInputDecoration(
                   "Current Password",
                   _isCurrentPasswordObscured,
-                      () => setState(() => _isCurrentPasswordObscured = !_isCurrentPasswordObscured),
+                  () => setState(
+                    () =>
+                        _isCurrentPasswordObscured =
+                            !_isCurrentPasswordObscured,
+                  ),
                 ),
-                validator: (value) =>
-                value == null || value.isEmpty ? "Please enter your current password" : null,
+                validator:
+                    (value) =>
+                        value == null || value.isEmpty
+                            ? "Please enter your current password"
+                            : null,
               ),
               const SizedBox(height: 16),
 
@@ -129,11 +135,15 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 decoration: _buildInputDecoration(
                   "New Password",
                   _isNewPasswordObscured,
-                      () => setState(() => _isNewPasswordObscured = !_isNewPasswordObscured),
+                  () => setState(
+                    () => _isNewPasswordObscured = !_isNewPasswordObscured,
+                  ),
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) return "Please enter a new password";
-                  if (value.length < 6) return "Password must be at least 6 characters";
+                  if (value == null || value.isEmpty)
+                    return "Please enter a new password";
+                  if (value.length < 6)
+                    return "Password must be at least 6 characters";
                   return null;
                 },
               ),
@@ -146,11 +156,17 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 decoration: _buildInputDecoration(
                   "Confirm New Password",
                   _isConfirmPasswordObscured,
-                      () => setState(() => _isConfirmPasswordObscured = !_isConfirmPasswordObscured),
+                  () => setState(
+                    () =>
+                        _isConfirmPasswordObscured =
+                            !_isConfirmPasswordObscured,
+                  ),
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) return "Please confirm your password";
-                  if (value != _newPasswordController.text) return "Passwords do not match";
+                  if (value == null || value.isEmpty)
+                    return "Please confirm your password";
+                  if (value != _newPasswordController.text)
+                    return "Passwords do not match";
                   return null;
                 },
               ),
@@ -161,22 +177,25 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF03BF8D), // Match your login button
+                    backgroundColor: const Color(
+                      0xFF03BF8D,
+                    ), // Match your login button
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(100),
                     ),
                   ),
                   onPressed: _isLoading ? null : _updatePassword,
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                    "Update Password",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child:
+                      _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                            "Update Password",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                 ),
               ),
             ],
@@ -188,7 +207,10 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   // --- Helper function for consistent text field styling ---
   InputDecoration _buildInputDecoration(
-      String label, bool isObscured, VoidCallback toggleObscured) {
+    String label,
+    bool isObscured,
+    VoidCallback toggleObscured,
+  ) {
     return InputDecoration(
       labelText: label,
       fillColor: const Color(0xFFD9D9D9).withValues(alpha: 0.5),

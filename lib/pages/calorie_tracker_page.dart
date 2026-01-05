@@ -1568,7 +1568,10 @@ class _HistoryAnalysisViewState extends State<_HistoryAnalysisView> {
                   data.entries.map((e) {
                     final isToday = e.key == today;
                     final percentage = maxVal == 0 ? 0.0 : (e.value / maxVal);
-                    final barHeight = max(8.0, percentage * 90); // Max bar height 90px
+                    final barHeight = max(
+                      8.0,
+                      percentage * 90,
+                    ); // Max bar height 90px
                     final isOver = e.value > widget.dailyLimit;
 
                     return TweenAnimationBuilder<double>(
@@ -1596,74 +1599,76 @@ class _HistoryAnalysisViewState extends State<_HistoryAnalysisView> {
                                   ),
                                 ),
                               const SizedBox(height: 4),
-                            // Bar
-                            Container(
-                              width: isToday ? 32 : 24,
-                              height: height,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.bottomCenter,
-                                  end: Alignment.topCenter,
-                                  colors:
-                                      isOver
+                              // Bar
+                              Container(
+                                width: isToday ? 32 : 24,
+                                height: height,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.bottomCenter,
+                                    end: Alignment.topCenter,
+                                    colors:
+                                        isOver
+                                            ? [
+                                              Colors.red.shade400,
+                                              Colors.red.shade200,
+                                            ]
+                                            : [
+                                              Colors.teal.shade400,
+                                              Colors.teal.shade200,
+                                            ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow:
+                                      isToday
                                           ? [
-                                            Colors.red.shade400,
-                                            Colors.red.shade200,
+                                            BoxShadow(
+                                              color: (isOver
+                                                      ? Colors.red
+                                                      : Colors.teal)
+                                                  .withValues(alpha: 0.3),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 4),
+                                            ),
                                           ]
-                                          : [
-                                            Colors.teal.shade400,
-                                            Colors.teal.shade200,
-                                          ],
+                                          : null,
                                 ),
-                                borderRadius: BorderRadius.circular(8),
-                                boxShadow:
+                              ),
+                              const SizedBox(height: 8),
+                              // Day label
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isToday ? 8 : 4,
+                                  vertical: isToday ? 4 : 2,
+                                ),
+                                decoration:
                                     isToday
-                                        ? [
-                                          BoxShadow(
-                                            color: (isOver
-                                                    ? Colors.red
-                                                    : Colors.teal)
-                                                .withValues(alpha: 0.3),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 4),
+                                        ? BoxDecoration(
+                                          color: Colors.teal,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
                                           ),
-                                        ]
+                                        )
                                         : null,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            // Day label
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: isToday ? 8 : 4,
-                                vertical: isToday ? 4 : 2,
-                              ),
-                              decoration:
-                                  isToday
-                                      ? BoxDecoration(
-                                        color: Colors.teal,
-                                        borderRadius: BorderRadius.circular(8),
-                                      )
-                                      : null,
-                              child: Text(
-                                DateFormat(
-                                  'E',
-                                ).format(DateTime.parse(e.key)).substring(0, 2),
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight:
-                                      isToday
-                                          ? FontWeight.bold
-                                          : FontWeight.w500,
-                                  color:
-                                      isToday
-                                          ? Colors.white
-                                          : Colors.grey.shade600,
+                                child: Text(
+                                  DateFormat('E')
+                                      .format(DateTime.parse(e.key))
+                                      .substring(0, 2),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight:
+                                        isToday
+                                            ? FontWeight.bold
+                                            : FontWeight.w500,
+                                    color:
+                                        isToday
+                                            ? Colors.white
+                                            : Colors.grey.shade600,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
                         );
                       },
                     );
@@ -1949,11 +1954,15 @@ class _BMICalculatorFormState extends State<_BMICalculatorForm> {
 
       // Validate reasonable ranges
       if (w <= 0 || w > 500) {
-        setState(() => _errorMessage = "Please enter a valid weight (1-500 kg)");
+        setState(
+          () => _errorMessage = "Please enter a valid weight (1-500 kg)",
+        );
         return;
       }
       if (h <= 0 || h > 300) {
-        setState(() => _errorMessage = "Please enter a valid height (1-300 cm)");
+        setState(
+          () => _errorMessage = "Please enter a valid height (1-300 cm)",
+        );
         return;
       }
       if (a <= 0 || a > 150) {

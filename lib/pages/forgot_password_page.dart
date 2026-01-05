@@ -41,9 +41,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       } // Go back to login
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? "An error occurred")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message ?? "An error occurred")));
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -69,7 +69,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white54, width: 2),
                   ),
-                  child: const Icon(Icons.lock_outline, color: Colors.white, size: 40),
+                  child: const Icon(
+                    Icons.lock_outline,
+                    color: Colors.white,
+                    size: 40,
+                  ),
                 ),
                 const SizedBox(height: 24),
 
@@ -95,7 +99,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   controller: emailController,
                   style: const TextStyle(color: Colors.white),
                   validator: (value) {
-                    if (value == null || value.isEmpty || !value.contains('@')) {
+                    if (value == null ||
+                        value.isEmpty ||
+                        !value.contains('@')) {
                       return "Please enter a valid email address";
                     }
                     return null;
@@ -125,16 +131,19 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       ),
                     ),
                     onPressed: isLoading ? null : sendResetLink,
-                    child: isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                      "Send login link",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
+                    child:
+                        isLoading
+                            ? const CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                            : const Text(
+                              "Send login link",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                   ),
                 ),
                 const SizedBox(height: 24),

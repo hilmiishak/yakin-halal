@@ -22,7 +22,9 @@ Future<void> addToViewHistory(
   }
 
   if (finalId.isEmpty) {
-    debugPrint("❌ Error: No valid ID found for history logging: ${data['name']}");
+    debugPrint(
+      "❌ Error: No valid ID found for history logging: ${data['name']}",
+    );
     return;
   }
 

@@ -677,7 +677,10 @@ class RestaurantCard extends StatelessWidget {
         border:
             hasMenuMatch
                 ? Border.all(color: Colors.blue.shade700, width: 2)
-                : Border.all(color: Colors.grey.withValues(alpha: 0.1), width: 1),
+                : Border.all(
+                  color: Colors.grey.withValues(alpha: 0.1),
+                  width: 1,
+                ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),

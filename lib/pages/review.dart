@@ -37,7 +37,11 @@ class _ReviewPageState extends State<ReviewPage> {
         elevation: 0.5,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.black,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -55,11 +59,12 @@ class _ReviewPageState extends State<ReviewPage> {
           // 🔹 Review List (Expanded)
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('reviews')
-                  .where('restaurantId', isEqualTo: widget.restaurantId)
-                  .orderBy('timestamp', descending: true)
-                  .snapshots(),
+              stream:
+                  FirebaseFirestore.instance
+                      .collection('reviews')
+                      .where('restaurantId', isEqualTo: widget.restaurantId)
+                      .orderBy('timestamp', descending: true)
+                      .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -72,7 +77,10 @@ class _ReviewPageState extends State<ReviewPage> {
                 final reviews = snapshot.data!.docs;
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 20,
+                  ),
                   itemCount: reviews.length,
                   itemBuilder: (context, index) {
                     final data = reviews[index].data() as Map<String, dynamic>;
@@ -93,7 +101,8 @@ class _ReviewPageState extends State<ReviewPage> {
   // 🔹 Widget: Single Review Card
   Widget _buildReviewCard(Map<String, dynamic> data) {
     final String userName = data['userName'] ?? 'Anonymous';
-    final String initial = userName.isNotEmpty ? userName[0].toUpperCase() : "?";
+    final String initial =
+        userName.isNotEmpty ? userName[0].toUpperCase() : "?";
     final String? ownerReply = data['reply'];
 
     return Container(
@@ -153,10 +162,9 @@ class _ReviewPageState extends State<ReviewPage> {
               // Stars
               RatingBarIndicator(
                 rating: (data['rating'] ?? 0).toDouble(),
-                itemBuilder: (context, index) => const Icon(
-                  Icons.star_rounded,
-                  color: Colors.amber,
-                ),
+                itemBuilder:
+                    (context, index) =>
+                        const Icon(Icons.star_rounded, color: Colors.amber),
                 itemCount: 5,
                 itemSize: 16.0,
                 direction: Axis.horizontal,
@@ -192,7 +200,11 @@ class _ReviewPageState extends State<ReviewPage> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.verified_user_rounded, size: 14, color: Colors.teal.shade700),
+                      Icon(
+                        Icons.verified_user_rounded,
+                        size: 14,
+                        color: Colors.teal.shade700,
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         "Response from Owner",
@@ -259,10 +271,9 @@ class _ReviewPageState extends State<ReviewPage> {
               allowHalfRating: false,
               itemCount: 5,
               itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-              itemBuilder: (context, _) => const Icon(
-                Icons.star_rounded,
-                color: Colors.amber,
-              ),
+              itemBuilder:
+                  (context, _) =>
+                      const Icon(Icons.star_rounded, color: Colors.amber),
               onRatingUpdate: (value) => setState(() => rating = value),
             ),
           ),
@@ -299,17 +310,25 @@ class _ReviewPageState extends State<ReviewPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: isSubmitting
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text(
-                "Post Review",
-                style: TextStyle(
-                  fontFamily: "Poppins",
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                  fontSize: 15,
-                ),
-              ),
+              child:
+                  isSubmitting
+                      ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                      : const Text(
+                        "Post Review",
+                        style: TextStyle(
+                          fontFamily: "Poppins",
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          fontSize: 15,
+                        ),
+                      ),
             ),
           ),
         ],
@@ -323,7 +342,11 @@ class _ReviewPageState extends State<ReviewPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.rate_review_outlined, size: 60, color: Colors.grey.shade300),
+          Icon(
+            Icons.rate_review_outlined,
+            size: 60,
+            color: Colors.grey.shade300,
+          ),
           const SizedBox(height: 16),
           Text(
             "No reviews yet",
@@ -348,12 +371,16 @@ class _ReviewPageState extends State<ReviewPage> {
     final User? currentUser = FirebaseAuth.instance.currentUser;
 
     if (currentUser == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please login to review")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please login to review")));
       return;
     }
 
     if (reviewController.text.trim().isEmpty || rating == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please add a rating and comment")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please add a rating and comment")),
+      );
       return;
     }
 
@@ -361,10 +388,15 @@ class _ReviewPageState extends State<ReviewPage> {
 
     try {
       // Fetch user name
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(currentUser.uid).get();
+      DocumentSnapshot userDoc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(currentUser.uid)
+              .get();
       String userName = "Anonymous";
       if (userDoc.exists) {
-        userName = (userDoc.data() as Map<String, dynamic>)['name'] ?? 'Anonymous';
+        userName =
+            (userDoc.data() as Map<String, dynamic>)['name'] ?? 'Anonymous';
       }
 
       // Save to Firebase
@@ -389,11 +421,12 @@ class _ReviewPageState extends State<ReviewPage> {
       if (mounted) {
         FocusScope.of(context).unfocus();
       }
-
     } catch (e) {
       setState(() => isSubmitting = false);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
 }

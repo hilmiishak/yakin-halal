@@ -20,7 +20,8 @@ class _ReportPageState extends State<ReportPage> {
 
   final _formKey = GlobalKey<FormState>();
   final _descController = TextEditingController();
-  final _restaurantNameController = TextEditingController(); // ⭐️ New Controller
+  final _restaurantNameController =
+      TextEditingController(); // ⭐️ New Controller
 
   String _selectedIssue = 'Fake Halal Status';
   bool _isSubmitting = false;
@@ -31,7 +32,7 @@ class _ReportPageState extends State<ReportPage> {
     'Hygiene Issue',
     'Illegal Business',
     'Inappropriate Content',
-    'Other'
+    'Other',
   ];
 
   // ⭐️ 1. Function to Pick Image
@@ -49,10 +50,15 @@ class _ReportPageState extends State<ReportPage> {
   // ⭐️ 2. Function to Upload Image to Cloudinary
   Future<String?> _uploadImage(XFile imageFile) async {
     try {
-      final url = Uri.parse("https://api.cloudinary.com/v1_1/$_cloudinaryCloudName/image/upload");
-      final request = http.MultipartRequest('POST', url)
-        ..fields['upload_preset'] = _cloudinaryUploadPreset
-        ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+      final url = Uri.parse(
+        "https://api.cloudinary.com/v1_1/$_cloudinaryCloudName/image/upload",
+      );
+      final request =
+          http.MultipartRequest('POST', url)
+            ..fields['upload_preset'] = _cloudinaryUploadPreset
+            ..files.add(
+              await http.MultipartFile.fromPath('file', imageFile.path),
+            );
 
       final response = await request.send();
       final responseData = await response.stream.toBytes();
@@ -91,7 +97,8 @@ class _ReportPageState extends State<ReportPage> {
         'userId': user?.uid ?? 'anonymous',
         'userEmail': user?.email ?? 'anonymous',
         'issueType': _selectedIssue,
-        'restaurantName': _restaurantNameController.text.trim(), // ⭐️ Optional field
+        'restaurantName':
+            _restaurantNameController.text.trim(), // ⭐️ Optional field
         'description': _descController.text.trim(),
         'evidenceImageUrl': imageUrl, // ⭐️ Optional image URL
         'timestamp': FieldValue.serverTimestamp(),
@@ -100,15 +107,17 @@ class _ReportPageState extends State<ReportPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Report submitted successfully to Admin.")),
+          const SnackBar(
+            content: Text("Report submitted successfully to Admin."),
+          ),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error submitting report: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error submitting report: $e")));
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -120,7 +129,10 @@ class _ReportPageState extends State<ReportPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFE3F9F4),
       appBar: AppBar(
-        title: const Text("Report a Problem", style: TextStyle(color: Colors.black)),
+        title: const Text(
+          "Report a Problem",
+          style: TextStyle(color: Colors.black),
+        ),
         backgroundColor: const Color(0xFFE3F9F4),
         iconTheme: const IconThemeData(color: Colors.black),
         elevation: 0,
@@ -139,7 +151,10 @@ class _ReportPageState extends State<ReportPage> {
               const SizedBox(height: 20),
 
               // --- Issue Type Dropdown ---
-              const Text("Issue Type", style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                "Issue Type",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -151,12 +166,13 @@ class _ReportPageState extends State<ReportPage> {
                   child: DropdownButton<String>(
                     value: _selectedIssue,
                     isExpanded: true,
-                    items: _issues.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
+                    items:
+                        _issues.map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
                     onChanged: (newValue) {
                       setState(() {
                         _selectedIssue = newValue!;
@@ -168,7 +184,10 @@ class _ReportPageState extends State<ReportPage> {
               const SizedBox(height: 20),
 
               // --- ⭐️ NEW: Restaurant Name (Optional) ---
-              const Text("Restaurant Name (Optional)", style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                "Restaurant Name (Optional)",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _restaurantNameController,
@@ -185,7 +204,10 @@ class _ReportPageState extends State<ReportPage> {
               const SizedBox(height: 20),
 
               // --- Description ---
-              const Text("Description", style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                "Description",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _descController,
@@ -209,11 +231,14 @@ class _ReportPageState extends State<ReportPage> {
               const SizedBox(height: 20),
 
               // --- ⭐️ NEW: Attach Picture (Optional) ---
-              const Text("Attach Evidence (Optional)", style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                "Attach Evidence (Optional)",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
 
               if (_selectedImage != null)
-              // Show selected image preview
+                // Show selected image preview
                 Stack(
                   children: [
                     Container(
@@ -242,14 +267,18 @@ class _ReportPageState extends State<ReportPage> {
                             color: Colors.red,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.close, color: Colors.white, size: 16),
+                          child: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 16,
+                          ),
                         ),
                       ),
                     ),
                   ],
                 )
               else
-              // Show Upload Button
+                // Show Upload Button
                 GestureDetector(
                   onTap: _pickImage,
                   child: Container(
@@ -264,7 +293,13 @@ class _ReportPageState extends State<ReportPage> {
                       children: const [
                         Icon(Icons.camera_alt, color: Colors.grey),
                         SizedBox(width: 8),
-                        Text("Upload Photo", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                        Text(
+                          "Upload Photo",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -285,9 +320,23 @@ class _ReportPageState extends State<ReportPage> {
                     ),
                   ),
                   onPressed: _isSubmitting ? null : _submitReport,
-                  child: _isSubmitting
-                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text("Submit Report", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  child:
+                      _isSubmitting
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                          : const Text(
+                            "Submit Report",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                 ),
               ),
             ],

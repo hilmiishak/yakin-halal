@@ -26,7 +26,7 @@ class _SettingsPageState extends State<SettingsPage> {
   static const String _appVersion = "1.0.0";
   static const String _developerName = "Muhammad Hilmi bin Ishak";
   static const String _universityName = "Universiti Sains Islam Malaysia";
-  static const String _supportEmail = "admin@yakinhalal.com";
+  static const String _supportEmail = "yakinhalalapp01@gmail.com";
 
   @override
   void initState() {
@@ -947,7 +947,7 @@ We use Google Places API to provide restaurant information. Google's privacy pol
 You can request to view, modify, or delete your personal data at any time through the app settings.
 
 6. Contact Us
-For privacy concerns, contact us at admin@yakinhalal.com
+For privacy concerns, contact us at yakinhalalapp01@gmail.com
 """;
 
   static const String _termsOfServiceContent = """
@@ -978,7 +978,7 @@ Restaurant halal status is verified to the best of our ability but we recommend 
 We reserve the right to suspend or terminate accounts that violate these terms.
 
 7. Contact
-Questions? Email us at admin@yakinhalal.com
+Questions? Email us at yakinhalalapp01@gmail.com
 """;
 }
 

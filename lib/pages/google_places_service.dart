@@ -217,7 +217,7 @@ class GooglePlacesService {
           "radius": radius,
         },
       },
-      "maxResultCount": 10,
+      "maxResultCount": 20,
     };
 
     final Map<String, String> headers = {
@@ -290,7 +290,7 @@ class GooglePlacesService {
     double lat,
     double lng,
   ) async {
-    return _fetchFromGoogle(lat, lng, "Halal food", 5000.0);
+    return _fetchFromGoogle(lat, lng, "Halal food", 25000.0);
   }
 
   Future<List<Map<String, dynamic>>> searchPlaces(
@@ -298,6 +298,6 @@ class GooglePlacesService {
     double lat,
     double lng,
   ) async {
-    return _fetchFromGoogle(lat, lng, "$query Halal", 10000.0);
+    return _fetchFromGoogle(lat, lng, "$query Halal", 25000.0);
   }
 }

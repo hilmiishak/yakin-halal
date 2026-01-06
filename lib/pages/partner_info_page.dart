@@ -49,7 +49,7 @@ class PartnerInfoPage extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.teal.withOpacity(0.3),
+                      color: Colors.teal.withValues(alpha: 0.3),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     ),
@@ -206,7 +206,7 @@ class PartnerInfoPage extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    shadowColor: Colors.teal.withOpacity(0.4),
+                    shadowColor: Colors.teal.withValues(alpha: 0.4),
                   ),
                   onPressed: _launchPortal,
                   child: const Text(

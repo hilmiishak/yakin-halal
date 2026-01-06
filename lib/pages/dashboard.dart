@@ -182,15 +182,23 @@ class _HomePageState extends State<HomePage> {
 
       final prompt = '''
         User query: "$userQuery"
+        
+        First, determine if this is a FOOD-RELATED query or just a GREETING/CHAT.
+        
+        GREETING examples: "hey", "hello", "hi", "what's up", "how are you", "thanks", "ok", "bye"
+        NON-FOOD examples: "what can you do", "help", "who are you", random words
+        FOOD examples: "burger", "nasi lemak nearby", "shawarma at bukit bintang", "I want pizza", "craving sushi"
+        
+        If it's a GREETING or NON-FOOD query, return:
+        {"type": "chat", "reply": "Hey there! 👋 What are you craving today? Try asking me something like 'nasi lemak nearby' or 'burger at KLCC'!"}
+        
+        If it's a FOOD-RELATED query:
         Task 1: Extract the SINGLE most important food keyword (e.g., "shawarma", "burger", "nasi lemak").
         Task 2: Extract the location/area if mentioned (e.g., "bukit bintang", "KLCC", "Petaling Jaya"). If no specific location is mentioned, use "nearby".
         Task 3: Write a short, exciting 1-sentence reply that mentions the location if specified.
         
         Return strictly JSON format:
-        {"keyword": "shawarma", "location": "bukit bintang", "reply": "Finding delicious shawarma spots in Bukit Bintang!"}
-        
-        If no location mentioned:
-        {"keyword": "burger", "location": "nearby", "reply": "Searching for juicy burgers nearby!"}
+        {"type": "food", "keyword": "shawarma", "location": "bukit bintang", "reply": "Finding delicious shawarma spots in Bukit Bintang!"}
       ''';
 
       final response = await model.generateContent([Content.text(prompt)]);
@@ -201,6 +209,25 @@ class _HomePageState extends State<HomePage> {
               .trim() ??
           "{}";
 
+      // Check if it's a chat/greeting response (no food search needed)
+      final RegExp typeReg = RegExp(r'"type":\s*"([^"]+)"');
+      final tMatch = typeReg.firstMatch(text);
+      final queryType = tMatch?.group(1) ?? "food";
+
+      if (queryType == "chat") {
+        // Just a greeting or non-food query - show reply only, no search
+        final RegExp repReg = RegExp(r'"reply":\s*"([^"]+)"');
+        final rMatch = repReg.firstMatch(text);
+        final reply =
+            rMatch?.group(1) ?? "Hey there! 👋 What are you craving today?";
+        setState(() {
+          _aiReply = reply;
+          _isChatLoading = false;
+        });
+        return;
+      }
+
+      // It's a food query - proceed with search
       String keyword = "Food";
       String location = "nearby";
       String reply = "Searching nearby...";

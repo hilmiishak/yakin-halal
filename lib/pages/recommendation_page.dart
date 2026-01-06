@@ -28,6 +28,10 @@ class _RecommendedPageState extends State<RecommendedPage>
   List<Map<String, dynamic>> _googleRecommendations = [];
   bool _isGoogleLoading = true;
 
+  // ⭐️ FIX: Cache to prevent flashing during refresh
+  List<Map<String, dynamic>> _cachedDisplayList = [];
+  bool _isRefreshing = false; // Differentiate initial load vs refresh
+
   User? _currentUser;
   Position? _currentPosition;
 
@@ -37,10 +41,14 @@ class _RecommendedPageState extends State<RecommendedPage>
   @override
   void initState() {
     super.initState();
-    // ⭐️ CHANGE: 3 Tabs -> 2 Tabs
     _tabController = TabController(length: 2, vsync: this);
-    _loadUserData();
-    _getCurrentLocation();
+    _initializeData(); // ⭐️ FIX: Single async method to load in order
+  }
+
+  // ⭐️ FIX: Load data in correct sequence
+  Future<void> _initializeData() async {
+    await _loadUserData(); // 1. Load preferences FIRST
+    await _getCurrentLocation(); // 2. Then get location (which fetches Google data)
   }
 
   @override
@@ -69,20 +77,29 @@ class _RecommendedPageState extends State<RecommendedPage>
         setState(() {
           _currentPosition = position;
         });
-        _fetchGoogleRecommendations();
+        await _fetchGoogleRecommendations(); // ⭐️ FIX: Await the fetch!
       }
     } catch (e) {
       debugPrint("Error getting location: $e");
+      // ⭐️ FIX: Stop loading on error
+      if (mounted) setState(() => _isGoogleLoading = false);
     }
   }
 
   Future<void> _fetchGoogleRecommendations() async {
-    if (_currentPosition == null) return;
+    // ⭐️ FIX: Set loading false if we can't fetch
+    if (_currentPosition == null || _userPreferences.isEmpty) {
+      if (mounted) setState(() => _isGoogleLoading = false);
+      return;
+    }
+
     try {
+      // Use the original generic "Halal food" search for more results
       final results = await GooglePlacesService().fetchNearbyHalalPlaces(
         _currentPosition!.latitude,
         _currentPosition!.longitude,
       );
+
       if (mounted) {
         setState(() {
           _googleRecommendations = results;
@@ -136,6 +153,11 @@ class _RecommendedPageState extends State<RecommendedPage>
               _getCollaborativeRecommendations();
           _isLoading = false;
         });
+
+        // Fetch Google recommendations AFTER preferences are loaded
+        if (_currentPosition != null) {
+          _fetchGoogleRecommendations();
+        }
       } else {
         setState(() {
           _collaborativeRecommendationsFuture = null;
@@ -279,8 +301,12 @@ class _RecommendedPageState extends State<RecommendedPage>
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.black),
             onPressed: () {
+              setState(() {
+                _isGoogleLoading = true;
+                _isRefreshing = true; // ⭐️ Prevent flashing
+              });
               _loadUserData();
-              _fetchGoogleRecommendations();
+              _getCurrentLocation(); // ⭐️ Updates GPS then fetches data
             },
           ),
           IconButton(
@@ -369,9 +395,12 @@ class _RecommendedPageState extends State<RecommendedPage>
   }) {
     return RefreshIndicator(
       onRefresh: () async {
-        setState(() => _isGoogleLoading = true);
+        setState(() {
+          _isGoogleLoading = true;
+          _isRefreshing = true; // ⭐️ Prevent flashing
+        });
         await _loadUserData();
-        await _fetchGoogleRecommendations();
+        await _getCurrentLocation(); // ⭐️ Updates GPS then fetches data
       },
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -413,10 +442,22 @@ class _RecommendedPageState extends State<RecommendedPage>
               .limit(_dataLimit)
               .snapshots(),
       builder: (context, snapshot) {
-        // Wait for BOTH Firebase AND Google to avoid jumping
+        // ⭐️ FIX: Show cached data during REFRESH to prevent flashing
+        // Only show skeleton on INITIAL load (when cache is empty)
         if (snapshot.connectionState == ConnectionState.waiting ||
             _isGoogleLoading) {
+          if (_isRefreshing && _cachedDisplayList.isNotEmpty) {
+            // Show cached data with loading indicator overlay
+            return _buildCachedListWithLoader();
+          }
           return _buildSkeletonList();
+        }
+
+        // ⭐️ Reset refresh flag when data is ready
+        if (_isRefreshing) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) setState(() => _isRefreshing = false);
+          });
         }
 
         List<Map<String, dynamic>> finalDisplayList = [];
@@ -432,16 +473,34 @@ class _RecommendedPageState extends State<RecommendedPage>
           }
         }
 
-        // B. Process Google (Deduplicated)
+        // B. Process Google (Deduplicated & Filtered by preference)
         if (_googleRecommendations.isNotEmpty) {
-          // Filter by User Preference
+          // Filter Google results by user preferences (checking Cuisine AND Name)
           final matchedGoogle =
               _googleRecommendations.where((item) {
                 String gCuisine =
                     (item['cuisine'] ?? '').toString().toLowerCase();
-                return _userPreferences.any(
-                  (pref) => gCuisine == pref.toLowerCase(),
-                );
+                String gName =
+                    (item['name'] ?? '')
+                        .toString()
+                        .toLowerCase(); // ⭐️ ADDED: Check Name
+
+                return _userPreferences.any((pref) {
+                  String prefLower = pref.toLowerCase();
+
+                  // ⭐️ CLEAN UP: Remove "food" from preference if present (e.g. "Thai Food" -> "Thai")
+                  // This helps match "Mengrai Thai" against "Thai Food"
+                  String corePref = prefLower.replaceAll(' food', '').trim();
+
+                  // Check if the preference keyword appears in EITHER the cuisine OR the name
+                  bool nameMatch = gName.contains(corePref);
+                  bool cuisineMatch =
+                      gCuisine.contains(prefLower) ||
+                      prefLower.contains(gCuisine) ||
+                      gCuisine == prefLower;
+
+                  return nameMatch || cuisineMatch;
+                });
               }).toList();
 
           for (var googleItem in matchedGoogle) {
@@ -510,10 +569,13 @@ class _RecommendedPageState extends State<RecommendedPage>
           );
         }
 
+        // ⭐️ FIX: Only update cache when we have complete data
+        _cachedDisplayList = finalDisplayList;
+
         return AnimatedSwitcher(
-          duration: const Duration(milliseconds: 500),
+          duration: const Duration(milliseconds: 300),
           child: Column(
-            key: ValueKey(finalDisplayList.length),
+            key: ValueKey('preference_list_${finalDisplayList.hashCode}'),
             children:
                 finalDisplayList.map((data) {
                   final bool isGoogle = data['is_google'] == true;
@@ -612,6 +674,50 @@ class _RecommendedPageState extends State<RecommendedPage>
     );
   }
 
+  // ⭐️ FIX: Show cached data with loading overlay during refresh
+  Widget _buildCachedListWithLoader() {
+    return Stack(
+      children: [
+        // Show the cached list (previous data)
+        Column(
+          children:
+              _cachedDisplayList.map((data) {
+                final bool isGoogle = data['is_google'] == true;
+                String distText = "N/A";
+                final coordinates = _parseCoordinates(data['coordinate']);
+                if (_currentPosition != null && coordinates != null) {
+                  double d = _calculateHaversineDistance(
+                    _currentPosition!.latitude,
+                    _currentPosition!.longitude,
+                    coordinates.latitude,
+                    coordinates.longitude,
+                  );
+                  distText = "${d.toStringAsFixed(1)} km";
+                }
+                return Opacity(
+                  opacity: 0.6, // Dim the cards to indicate loading
+                  child: _RecommendedRestaurantCard(
+                    data: data,
+                    distance: distText,
+                    isGoogle: isGoogle,
+                    onTap: () {}, // Disable tap during refresh
+                  ),
+                );
+              }).toList(),
+        ),
+        // Loading indicator overlay
+        Positioned.fill(
+          child: Container(
+            color: Colors.white.withValues(alpha: 0.3),
+            child: const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   // 2. Collaborative (Unchanged)
   Widget _buildCollaborativeList() {
     if (_collaborativeRecommendationsFuture == null) {
@@ -645,10 +751,12 @@ class _RecommendedPageState extends State<RecommendedPage>
                   );
                   distText = "${d.toStringAsFixed(1)} km";
                 }
+                // Check if this restaurant is from Google (saved when favorited)
+                final bool isFromGoogle = data['is_google'] == true;
                 return _RecommendedRestaurantCard(
                   data: data,
                   distance: distText,
-                  isGoogle: false,
+                  isGoogle: isFromGoogle,
                   onTap: () async {
                     // ⭐️ LOG HISTORY
                     await addToViewHistory(context, doc.id, data);

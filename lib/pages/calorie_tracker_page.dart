@@ -1681,36 +1681,118 @@ class _HistoryAnalysisViewState extends State<_HistoryAnalysisView> {
   }
 
   Widget _buildMonthlyChart(Map<String, int> data) {
+    // 1. Determine the Month/Year string from the data keys
+    String headerDate = "";
+    if (data.isNotEmpty) {
+      // Parse the first key (e.g., "2026-01-01") to get the month/year
+      final firstDate = DateTime.parse(data.keys.first);
+      headerDate = DateFormat('MMMM yyyy').format(firstDate);
+    } else {
+      // Fallback to today if data is empty
+      headerDate = DateFormat('MMMM yyyy').format(DateTime.now());
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade100,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children:
-            data.entries.map((e) {
-              final over = e.value > widget.dailyLimit;
-              return Container(
-                width: 30,
-                height: 30,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ⭐️ Header Row: Title + Date
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Monthly Overview",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
-                  color: over ? Colors.red.shade100 : Colors.green.shade100,
-                  borderRadius: BorderRadius.circular(4),
+                  color: Colors.teal.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  headerDate,
+                  style: TextStyle(
+                    color: Colors.teal.shade700,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Using GridView.builder to perfectly fill the space
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 7, // 7 days in a week
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              childAspectRatio: 1, // Ensures boxes are square
+            ),
+            itemCount: data.length,
+            itemBuilder: (context, index) {
+              final entry = data.entries.elementAt(index);
+              final over = entry.value > widget.dailyLimit;
+              final day = DateTime.parse(entry.key).day;
+              final hasData = entry.value > 0;
+
+              return Container(
+                decoration: BoxDecoration(
+                  color:
+                      !hasData
+                          ? Colors.grey.shade50
+                          : over
+                          ? Colors.red.shade50
+                          : Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color:
+                        !hasData
+                            ? Colors.transparent
+                            : over
+                            ? Colors.red.shade200
+                            : Colors.green.shade200,
+                    width: 1,
+                  ),
                 ),
                 child: Center(
                   child: Text(
-                    "${DateTime.parse(e.key).day}",
+                    "$day",
                     style: TextStyle(
-                      fontSize: 10,
-                      color: over ? Colors.red : Colors.green,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color:
+                          !hasData
+                              ? Colors.grey.shade400
+                              : over
+                              ? Colors.red.shade700
+                              : Colors.green.shade700,
                     ),
                   ),
                 ),
               );
-            }).toList(),
+            },
+          ),
+        ],
       ),
     );
   }

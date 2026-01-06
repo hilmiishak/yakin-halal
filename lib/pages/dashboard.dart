@@ -1177,6 +1177,8 @@ class RestaurantCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isGoogle = data['is_google'] ?? false;
+
     return GestureDetector(
       onTap: () async {
         // ⭐️ IMPORTANT: Pass context here
@@ -1238,7 +1240,7 @@ class RestaurantCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: Colors.green,
+                      color: isGoogle ? Colors.blue : Colors.green,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -1247,8 +1249,8 @@ class RestaurantCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.verified,
+                    child: Icon(
+                      isGoogle ? Icons.people : Icons.verified,
                       size: 12,
                       color: Colors.white,
                     ),
@@ -1276,8 +1278,11 @@ class RestaurantCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const HalalBadge(
-                        type: HalalType.certified,
+                      HalalBadge(
+                        type:
+                            isGoogle
+                                ? HalalType.community
+                                : HalalType.certified,
                         compact: true,
                       ),
                       const SizedBox(width: 6),

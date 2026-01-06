@@ -480,9 +480,12 @@ class _FindRestaurantState extends State<FindRestaurant> {
                     if (locationQuery.isNotEmpty) {
                       String addr =
                           (data['location'] ?? "").toString().toLowerCase();
-                      isLocationMatch = addr.contains(
-                        locationQuery.toLowerCase(),
-                      );
+                      String restaurantName =
+                          (data['name'] ?? "").toString().toLowerCase();
+                      String locLower = locationQuery.toLowerCase();
+                      isLocationMatch =
+                          addr.contains(locLower) ||
+                          restaurantName.contains(locLower);
                     } else {
                       isLocationMatch = dist <= 25.0;
                     }
@@ -539,7 +542,24 @@ class _FindRestaurantState extends State<FindRestaurant> {
                 }
               }
 
-              allItems.sort((a, b) => a.distance.compareTo(b.distance));
+              // Sort by: 1) Name matches location query first, 2) Then by distance
+              allItems.sort((a, b) {
+                if (locationQuery.isNotEmpty) {
+                  String locLower = locationQuery.toLowerCase();
+                  String aName =
+                      (a.data['name'] ?? "").toString().toLowerCase();
+                  String bName =
+                      (b.data['name'] ?? "").toString().toLowerCase();
+                  bool aMatchesLoc = aName.contains(locLower);
+                  bool bMatchesLoc = bName.contains(locLower);
+
+                  // Prioritize name matches with location query
+                  if (aMatchesLoc && !bMatchesLoc) return -1;
+                  if (!aMatchesLoc && bMatchesLoc) return 1;
+                }
+                // Within same priority, sort by distance
+                return a.distance.compareTo(b.distance);
+              });
               final seenIds = <String>{};
               allItems =
                   allItems.where((item) => seenIds.add(item.id)).toList();

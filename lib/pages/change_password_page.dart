@@ -61,8 +61,16 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       }
     } on FirebaseAuthException catch (e) {
       // 5. Handle errors
-      if (e.code == 'wrong-password') {
+      if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
         _showErrorSnackBar("Your current password is incorrect.");
+      } else if (e.code == 'weak-password') {
+        _showErrorSnackBar("The new password is too weak.");
+      } else if (e.code == 'requires-recent-login') {
+        _showErrorSnackBar(
+          "Please log out and log in again before changing your password.",
+        );
+      } else if (e.code == 'network-request-failed') {
+        _showErrorSnackBar("Network error. Please check your connection.");
       } else {
         _showErrorSnackBar(e.message ?? "An error occurred.");
       }
@@ -120,11 +128,12 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                             !_isCurrentPasswordObscured,
                   ),
                 ),
-                validator:
-                    (value) =>
-                        value == null || value.isEmpty
-                            ? "Please enter your current password"
-                            : null,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Please enter your current password";
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
 
@@ -140,10 +149,15 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   ),
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty)
+                  if (value == null || value.isEmpty) {
                     return "Please enter a new password";
-                  if (value.length < 6)
+                  }
+                  if (value.length < 6) {
                     return "Password must be at least 6 characters";
+                  }
+                  if (value == _currentPasswordController.text) {
+                    return "New password must be different from current password";
+                  }
                   return null;
                 },
               ),
@@ -163,10 +177,12 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   ),
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty)
+                  if (value == null || value.isEmpty) {
                     return "Please confirm your password";
-                  if (value != _newPasswordController.text)
+                  }
+                  if (value != _newPasswordController.text) {
                     return "Passwords do not match";
+                  }
                   return null;
                 },
               ),

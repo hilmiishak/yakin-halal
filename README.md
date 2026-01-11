@@ -1,4 +1,4 @@
-# projekfyp
+# YakinHalal (FYP Project)
 
 A new Flutter project.
 
